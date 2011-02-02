@@ -1,0 +1,370 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "WinMTR.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WINMTR_DIALOG DIALOGEX 0, 0, 390, 193
+STYLE DS_SETFONT | DS_3DLOOK | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&Start",ID_RESTART,203,12,50,14,BS_FLAT
+    PUSHBUTTON      "&Options",ID_OPTIONS,270,12,51,14,BS_FLAT
+    PUSHBUTTON      "E&xit",IDCANCEL,328,12,49,14,BS_FLAT
+    PUSHBUTTON      "&Copy Text to clipboard",ID_CTTC,14,39,89,14,BS_FLAT
+    PUSHBUTTON      "Co&py HTML to clipboard",ID_CHTC,113,39,89,14,BS_FLAT
+    PUSHBUTTON      "Export &TEXT",ID_EXPT,270,39,51,14,BS_FLAT
+    PUSHBUTTON      "Export &HTML",ID_EXPH,328,39,49,14,BS_FLAT
+    CONTROL         "List1",IDC_LIST_MTR,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,60,376,126
+    LTEXT           "Host:",IDC_STATIC,13,12,20,13,SS_CENTERIMAGE
+    GROUPBOX        "",IDC_STATIC,7,3,251,29,BS_FLAT
+    GROUPBOX        "",IDC_STATICS,263,3,120,29,BS_FLAT
+    GROUPBOX        "",IDC_STATICJ,7,31,376,26,BS_FLAT
+    COMBOBOX        IDC_COMBO_HOST,35,12,164,73,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOG_OPTIONS DIALOGEX 0, 0, 251, 164
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Options"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,53,143,50,14,BS_FLAT
+    PUSHBUTTON      "&Cancel",IDCANCEL,141,143,50,14,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,7,91,237,46,BS_FLAT
+    ICON            IDR_MAINFRAME,IDC_STATIC,15,12,20,20
+    LTEXT           "Interval (sec):",IDC_STATIC,15,102,45,10,NOT WS_GROUP
+    EDITTEXT        IDC_EDIT_INTERVAL,71,99,34,13,ES_AUTOHSCROLL
+    LTEXT           "Ping size (bytes):",IDC_STATIC,139,102,53,10,NOT WS_GROUP
+    EDITTEXT        IDC_EDIT_SIZE,196,99,34,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Resolve names",IDC_CHECK_DNS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,167,119,63,8
+    GROUPBOX        "",IDC_STATIC,7,7,237,82,BS_FLAT
+    CTEXT           "Get Fully Managed Dedicated and Cloud hosting in Europe and USA at killer prices.",IDC_STATIC,31,35,201,17
+    CTEXT           "WinMTR v0.92 is offered under GPL V2 by Appnor MSP",IDC_STATIC,42,14,194,17
+    PUSHBUTTON      "&License and Credits",ID_LICENSE,81,67,94,14,BS_FLAT
+    LTEXT           "Max. hosts in LRU list:",IDC_STATIC,15,119,74,10,NOT WS_GROUP
+    EDITTEXT        IDC_EDIT_MAX_LRU,90,116,34,13,ES_AUTOHSCROLL
+    CONTROL         "www.appnor.com",IDC_MFCLINK1,"MfcLink",WS_TABSTOP,102,51,60,11
+END
+
+IDD_DIALOG_LICENSE DIALOGEX 0, 0, 175, 70
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "License & Credits"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,59,43,50,14
+    LTEXT           "Read more on",IDC_STATIC,36,27,46,8
+    CONTROL         "www.winmtr.net",IDC_MFCLINK1,"MfcLink",WS_TABSTOP,83,26,60,14
+    LTEXT           "WinMTR is licensed under GPL V2.",IDC_STATIC,33,14,113,8
+END
+
+IDD_DIALOG_PROPERTIES DIALOG 0, 0, 201, 159
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Host properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,71,138,50,14,BS_FLAT
+    LTEXT           "Name:",IDC_STATIC,15,18,24,8
+    EDITTEXT        IDC_EDIT_PHOST,48,16,136,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "IP Address:",IDC_STATIC,14,32,40,9
+    EDITTEXT        IDC_EDIT_PIP,58,31,126,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Packets",IDC_STATIC,7,74,89,60,BS_FLAT
+    GROUPBOX        "Ping time",IDC_STATIC,108,74,86,60,BS_FLAT
+    GROUPBOX        "Host",IDC_STATIC,7,7,187,62,BS_FLAT
+    LTEXT           "Loss (%):",IDC_STATIC,13,117,31,9
+    LTEXT           "Received:",IDC_STATIC,13,101,36,9
+    LTEXT           "Sent:",IDC_STATIC,13,85,21,9
+    LTEXT           "Last:",IDC_STATIC,114,84,18,9
+    LTEXT           "Best:",IDC_STATIC,114,96,20,8
+    LTEXT           "Average:",IDC_STATIC,114,107,32,8
+    LTEXT           "Worst:",IDC_STATIC,114,118,23,8
+    EDITTEXT        IDC_EDIT_PSENT,53,82,35,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    EDITTEXT        IDC_EDIT_PRECV,53,99,35,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    EDITTEXT        IDC_EDIT_PLOSS,53,116,35,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    EDITTEXT        IDC_EDIT_PLAST,150,81,34,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_PBEST,150,94,34,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_PAVRG,150,106,34,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_PWORST,150,118,34,12,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_PCOMMENT,14,50,170,12,ES_AUTOHSCROLL | ES_READONLY
+END
+
+IDD_DIALOG_HELP DIALOGEX 0, 0, 256, 122
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "WinMTR"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,144,101,50,14
+    CONTROL         "www.appnor.com",IDC_MFCLINK1,"MfcLink",WS_TABSTOP,187,8,60,11
+    LTEXT           "WinMTR v0.92 is offered under GPL V2 by Appnor MSP",IDC_STATIC,7,9,176,10
+    LTEXT           "Usage: WinMTR [options] target_host_name",IDC_STATIC,7,29,144,8
+    LTEXT           "Options:",IDC_STATIC,7,39,28,8
+    LTEXT           "     --interval, -i VALUE. Set ping interval.",IDC_STATIC,26,47,131,8
+    LTEXT           "     --size, -s VALUE. Set ping size.",IDC_STATIC,26,57,109,8
+    LTEXT           "     --maxLRU, -m VALUE. Set max hosts in LRU list.",IDC_STATIC,26,67,163,8
+    LTEXT           "     --help, -h. Print this help.",IDC_STATIC,26,89,92,8
+    LTEXT           "     --numeric, -n. Do not resolve names.",IDC_STATIC,26,78,129,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,9,0,2
+ PRODUCTVERSION 0,9,0,2
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "WinMTR by Appnor MSP - www.winmtr.net"
+            VALUE "FileVersion", "0.9.0.2"
+            VALUE "InternalName", "WinMTR"
+            VALUE "LegalCopyright", "WinMTR 0.9 (c) 2010-2011 Appnor MSP - Fully Managed Hosting & Cloud Provider www.appnor.com"
+            VALUE "OriginalFilename", "WinMTR.EXE"
+            VALUE "ProductName", "WinMTR Application"
+            VALUE "ProductVersion", "0.9.0.2"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_WINMTR_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 383
+        VERTGUIDE, 270
+        VERTGUIDE, 321
+        VERTGUIDE, 328
+        VERTGUIDE, 377
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 186
+        HORZGUIDE, 12
+        HORZGUIDE, 39
+    END
+
+    IDD_DIALOG_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 157
+    END
+
+    IDD_DIALOG_LICENSE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 168
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 63
+    END
+
+    IDD_DIALOG_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 194
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 152
+    END
+
+    IDD_DIALOG_HELP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 249
+        VERTGUIDE, 26
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 115
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_DIALOG_HELP DLGINIT
+BEGIN
+    IDC_MFCLINK1, 0x37c, 238, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x3a70, 
+0x2f2f, 0x7777, 0x2e77, 0x7061, 0x6e70, 0x726f, 0x632e, 0x6d6f, 0x3f2f, 
+0x7475, 0x5f6d, 0x6f73, 0x7275, 0x6563, 0x773d, 0x6e69, 0x746d, 0x2672, 
+0x7475, 0x5f6d, 0x656d, 0x6964, 0x6d75, 0x643d, 0x7365, 0x746b, 0x706f, 
+0x7526, 0x6d74, 0x635f, 0x6d61, 0x6170, 0x6769, 0x3d6e, 0x6f73, 0x7466, 
+0x6177, 0x6572, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x3e6c, 
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 0x7869, 
+0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 
+0x7869, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865, 
+0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 
+0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 
+0x6974, 0x3e70, 
+    0
+END
+
+IDD_DIALOG_OPTIONS DLGINIT
+BEGIN
+    IDC_MFCLINK1, 0x37c, 238, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x3a70, 
+0x2f2f, 0x7777, 0x2e77, 0x7061, 0x6e70, 0x726f, 0x632e, 0x6d6f, 0x3f2f, 
+0x7475, 0x5f6d, 0x6f73, 0x7275, 0x6563, 0x773d, 0x6e69, 0x746d, 0x2672, 
+0x7475, 0x5f6d, 0x656d, 0x6964, 0x6d75, 0x643d, 0x7365, 0x746b, 0x706f, 
+0x7526, 0x6d74, 0x635f, 0x6d61, 0x6170, 0x6769, 0x3d6e, 0x6f73, 0x7466, 
+0x6177, 0x6572, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x3e6c, 
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 0x7869, 
+0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 
+0x7869, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865, 
+0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 0x464d, 
+0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 
+0x6974, 0x3e70, 
+    0
+END
+
+IDD_DIALOG_LICENSE DLGINIT
+BEGIN
+    IDC_MFCLINK1, 0x37c, 157, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x3c3e, 0x4d2f, 0x4346, 
+0x694c, 0x6b6e, 0x555f, 0x6c72, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 
+0x7255, 0x506c, 0x6572, 0x6966, 0x3e78, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 
+0x5f6b, 0x7255, 0x506c, 0x6572, 0x6966, 0x3e78, 0x4d3c, 0x4346, 0x694c, 
+0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x4d2f, 0x4346, 0x694c, 
+0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 
+0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 0x6974, 0x3e70, 
+0x4146, 0x534c, 0x3c45, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 
+0x546c, 0x7865, 0x5474, 0x6f6f, 0x746c, 0x7069, "\076" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDP_SOCKETS_INIT_FAILED "Windows sockets initialization failed."
+    IDS_STRING_SB_NAME      "WinMTR v0.92 GPL V2 by Appnor MSP - Fully Managed Hosting & Cloud Provider"
+    IDS_STRING_SB_PING      "0000000"
+    IDS_STRING_CLEAR_HISTORY "Clear History"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
