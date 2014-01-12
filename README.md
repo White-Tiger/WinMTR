@@ -26,6 +26,6 @@ And that's what I wanted to compare: native vs SixXS with long-term trace routes
 Since there wasn't any WinMTR build with IPv6, I decided to do it myself ;) The result can be seen here :P <br>
 *(after 1 day for IPv6, and 2 additional days to fix other stuff and polishing)*
 
-**If you're looking for an alternative** *(not meant for long-term traces)* there's [**vTrace**](vtrace.pl).
+**If you're looking for an alternative** *(not meant for long-term traces)* there's [**vTrace**](http://vtrace.pl).
 It's some really interesting piece of Software ;) *(with more then just trace routes)*
 ~~~~
