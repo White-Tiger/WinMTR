@@ -18,4 +18,10 @@ this should improve performance and reduces network load* <br>
 - `[ ]` + host history: pressing del key or right mouse will remove selected entry <br>
 - `[ ]` * new icon <br>
 
+### About me / why I decided to create this fork
+There isn't that much to say actually, I've been using IPv6 for a few years now thanks to [**SixXS**](http://sixxs.net/) and it always annoyed me that WinMTR couldn't handle IPv6... finally my ISP got some sort of IPv6 beta test. And that's what I wanted to compare, native vs SixXS with long-term trace routes such as those WinMTR provides.
+Since there wasn't any WinMTR build with IPv6, I decided to do it myself ;) The result can be seen here :P
+
+**If you're looking for an alternative** *(not meant for long-term traces)* there's [**vTrace**](vtrace.pl).
+It's some really interesting piece of Software ;) *(with more then just trace routes)*
 ~~~~

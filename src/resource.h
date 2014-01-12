@@ -39,7 +39,7 @@
 #define IDC_STATICJ                     1023
 #define IDC_COMBO_HOST                  1024
 #define IDC_EDIT_MAX_LRU                1025
-#define IDC_MFCLINK1                    1026
+#define IDC_CHECK_IPV6                  1026
 
 // Next default values for new objects
 // 
