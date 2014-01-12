@@ -17,6 +17,7 @@
 
 #include "WinMTRStatusBar.h"
 #include "WinMTRNet.h"
+#include "afxlinkctrl.h"
 
 //*****************************************************************************
 // CLASS:  WinMTRDialog
@@ -59,7 +60,9 @@ public:
 	CButton	m_buttonExit;
 	CButton	m_buttonStart;
 	CComboBox m_comboHost;
-	CListCtrl	m_listMTR;
+	CButton m_checkIPv6;
+	CListCtrl m_listMTR;
+	CMFCLinkCtrl m_buttonAppnor;
 
 	CStatic	m_staticS;
 	CStatic	m_staticJ;
@@ -77,18 +80,20 @@ public:
 	HANDLE				traceThreadMutex; 
 	double				interval;
 	bool				hasIntervalFromCmdLine;
-	int					pingsize;
+	WORD				pingsize;
 	bool				hasPingsizeFromCmdLine;
 	int					maxLRU;
 	bool				hasMaxLRUFromCmdLine;
 	int					nrLRU;
 	BOOL				useDNS;
 	bool				hasUseDNSFromCmdLine;
+	unsigned char		useIPv6;
+	bool				hasUseIPv6FromCmdLine;
 	WinMTRNet*			wmtrnet;
 
 	void SetHostName(const char *host);
 	void SetInterval(float i);
-	void SetPingSize(int ps);
+	void SetPingSize(WORD ps);
 	void SetMaxLRU(int mlru);
 	void SetUseDNS(BOOL udns);
 

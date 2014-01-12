@@ -11,7 +11,7 @@
 //
 // win32 port of unix gettimeofday
 //*****************************************************************************
-int gettimeofday(struct timeval* tv, struct timezone *tz)
+int gettimeofday(struct timeval* tv, struct timezone* /*tz*/)
 {
    if(!tv)
       return -1;
@@ -19,7 +19,7 @@ int gettimeofday(struct timeval* tv, struct timezone *tz)
    
    _ftime(&timebuffer);
 
-   tv->tv_sec = timebuffer.time;
+   tv->tv_sec = (long)timebuffer.time;
    tv->tv_usec = timebuffer.millitm * 1000 + 500;
    return 0;
 }

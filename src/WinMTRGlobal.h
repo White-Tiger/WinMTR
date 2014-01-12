@@ -28,6 +28,8 @@
   #include <afxcmn.h>
 #endif 
 #include <afxsock.h>
+#include <Iphlpapi.h>//IP_OPTION_INFORMATION32
+#include <ws2tcpip.h>//sockaddr_in6
 
 #include <process.h>
 #include <stdio.h>
@@ -46,10 +48,9 @@
 
 #include "resource.h"
 
-#define WINMTR_VERSION	"0.9"
-#define WINMTR_LICENSE	"GPL - GNU Public License"
-#define WINMTR_COPYRIGHT "WinMTR 0.9 (c) 2010-2011 Appnor MSP - Fully Managed Hosting & Cloud Provider www.appnor.com"
-#define WINMTR_HOMEPAGE	"http://WinMTR.sourceforge.net"
+#define WINMTR_VERSION	"1.0"
+#define WINMTR_LICENSE	"GPLv2 - GNU General Public License, version 2"
+#define WINMTR_HOMEPAGE	"https://github.com/White-Tiger/WinMTR"
 
 #define DEFAULT_PING_SIZE	64
 #define DEFAULT_INTERVAL	1.0
@@ -98,7 +99,7 @@ const char MTR_COLS[ MTR_NR_COLS ][10] = {
 };
 
 const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
-		190, 30, 50, 40, 40, 50, 50, 50, 50
+		249, 30, 50, 40, 40, 50, 50, 50, 50
 };
 
 int gettimeofday(struct timeval* tv, struct timezone *tz);

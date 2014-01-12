@@ -11,7 +11,6 @@
 #include "WinMTRNet.h"
 #include <iostream>
 #include <sstream>
-#include "afxlinkctrl.h"
 
 #define TRACE_MSG(msg)										\
 	{														\
@@ -76,9 +75,12 @@ WinMTRDialog::WinMTRDialog(CWnd* pParent)
 	hasPingsizeFromCmdLine = false;
 	hasMaxLRUFromCmdLine = false;
 	hasUseDNSFromCmdLine = false;
+	hasUseIPv6FromCmdLine = false;
 
 	traceThreadMutex = CreateMutex(NULL, FALSE, NULL);
 	wmtrnet = new WinMTRNet(this);
+	if(!wmtrnet->hasIPv6) m_checkIPv6.EnableWindow(FALSE);
+	useIPv6=2;
 }
 
 WinMTRDialog::~WinMTRDialog()
@@ -99,6 +101,7 @@ void WinMTRDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDCANCEL, m_buttonExit);
 	DDX_Control(pDX, ID_RESTART, m_buttonStart);
 	DDX_Control(pDX, IDC_COMBO_HOST, m_comboHost);
+	DDX_Control(pDX, IDC_CHECK_IPV6, m_checkIPv6);
 	DDX_Control(pDX, IDC_LIST_MTR, m_listMTR);
 	DDX_Control(pDX, IDC_STATICS, m_staticS);
 	DDX_Control(pDX, IDC_STATICJ, m_staticJ);
@@ -115,11 +118,15 @@ void WinMTRDialog::DoDataExchange(CDataExchange* pDX)
 BOOL WinMTRDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
+	if(!wmtrnet->initialized){
+		EndDialog(-1);
+		return TRUE;
+	}
 
 	#ifndef  _WIN64
-	char caption[] = {"WinMTR v0.92 32 bit by Appnor MSP - www.winmtr.net"};
+	char caption[] = {"WinMTR (Redux) v1.00 32bit"};
 	#else
-	char caption[] = {"WinMTR v0.92 64 bit by Appnor MSP - www.winmtr.net"};
+	char caption[] = {"WinMTR (Redux) v1.00 64bit"};
 	#endif
 
 	SetTimer(1, WINMTR_DIALOG_TIMER, NULL);
@@ -136,22 +143,14 @@ BOOL WinMTRDialog::OnInitDialog()
 	sbi[0] = IDS_STRING_SB_NAME;	
 	statusBar.SetIndicators( sbi,1);
 	statusBar.SetPaneInfo(0, statusBar.GetItemID(0),SBPS_STRETCH, NULL );
-	{ // Add appnor URL
-		CMFCLinkCtrl* m_pWndButton = new CMFCLinkCtrl;
-		if (!m_pWndButton->Create(_T("www.appnor.com"), WS_CHILD|WS_VISIBLE|WS_TABSTOP, CRect(0,0,0,0), &statusBar, 1234)) {
-			TRACE(_T("Failed to create button control.\n"));
-			return FALSE;
+	
+	// create Appnor button
+	if(m_buttonAppnor.Create(_T("www.appnor.com"), WS_CHILD|WS_VISIBLE|WS_TABSTOP, CRect(0,0,0,0), &statusBar, 1234)){
+		m_buttonAppnor.SetURL("http://appnor.com/?utm_source=winmtr&utm_medium=desktop&utm_campaign=software");
+		if(statusBar.AddPane(1234,1)){
+			statusBar.SetPaneWidth(statusBar.CommandToIndex(1234),100);
+			statusBar.AddPaneControl(m_buttonAppnor,1234,true);
 		}
-
-		m_pWndButton->SetURL("http://www.appnor.com/?utm_source=winmtr&utm_medium=desktop&utm_campaign=software");
-			
-		if(!statusBar.AddPane(1234,1)) {
-			AfxMessageBox(_T("Pane index out of range\nor pane with same ID already exists in the status bar"), MB_ICONERROR);
-			return FALSE;
-		}
-			
-		statusBar.SetPaneWidth(statusBar.CommandToIndex(1234), 100);
-		statusBar.AddPaneControl(m_pWndButton, 1234, true);
 	}
 
 	for(int i = 0; i< MTR_NR_COLS; i++)
@@ -215,27 +214,7 @@ BOOL WinMTRDialog::InitRegistry()
 	DWORD res, tmp_dword, value_size;
 	LONG r;
 
-	r = RegCreateKeyEx(	HKEY_CURRENT_USER, 
-					"Software", 
-					0, 
-					NULL,
-					REG_OPTION_NON_VOLATILE,
-					KEY_ALL_ACCESS,
-					NULL,
-					&hKey,
-					&res);
-	if( r != ERROR_SUCCESS) 
-		return FALSE;
-
-	r = RegCreateKeyEx(	hKey, 
-					"WinMTR", 
-					0, 
-					NULL,
-					REG_OPTION_NON_VOLATILE,
-					KEY_ALL_ACCESS,
-					NULL,
-					&hKey,
-					&res);
+	r = RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,&res);
 	if( r != ERROR_SUCCESS) 
 		return FALSE;
 
@@ -243,15 +222,7 @@ BOOL WinMTRDialog::InitRegistry()
 	RegSetValueEx(hKey,"License", 0, REG_SZ, (const unsigned char *)WINMTR_LICENSE, sizeof(WINMTR_LICENSE)+1);
 	RegSetValueEx(hKey,"HomePage", 0, REG_SZ, (const unsigned char *)WINMTR_HOMEPAGE, sizeof(WINMTR_HOMEPAGE)+1);
 
-	r = RegCreateKeyEx(	hKey, 
-					"Config", 
-					0, 
-					NULL,
-					REG_OPTION_NON_VOLATILE,
-					KEY_ALL_ACCESS,
-					NULL,
-					&hKey_v,
-					&res);
+	r = RegCreateKeyEx(hKey,"Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,&res);
 	if( r != ERROR_SUCCESS) 
 		return FALSE;
 
@@ -259,7 +230,7 @@ BOOL WinMTRDialog::InitRegistry()
 		tmp_dword = pingsize;
 		RegSetValueEx(hKey_v,"PingSize", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
 	} else {
-		if(!hasPingsizeFromCmdLine) pingsize = tmp_dword;
+		if(!hasPingsizeFromCmdLine) pingsize = (WORD)tmp_dword;
 	}
 	
 	if(RegQueryValueEx(hKey_v, "MaxLRU", 0, NULL, (unsigned char *)&tmp_dword, &value_size) != ERROR_SUCCESS) {
@@ -275,6 +246,14 @@ BOOL WinMTRDialog::InitRegistry()
 	} else {
 		if(!hasUseDNSFromCmdLine) useDNS = (BOOL)tmp_dword;
 	}
+	if(RegQueryValueEx(hKey_v, "UseIPv6", 0, NULL, (unsigned char *)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+		tmp_dword = useIPv6;
+		RegSetValueEx(hKey_v,"UseIPv6", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+	} else {
+		if(!hasUseIPv6FromCmdLine) useIPv6 = (unsigned char)tmp_dword;
+		if(useIPv6>2) useIPv6=1;
+	}
+	m_checkIPv6.SetCheck(useIPv6);
 
 	if(RegQueryValueEx(hKey_v, "Interval", 0, NULL, (unsigned char *)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = (DWORD)(interval * 1000);
@@ -283,15 +262,7 @@ BOOL WinMTRDialog::InitRegistry()
 		if(!hasIntervalFromCmdLine) interval = (float)tmp_dword / 1000.0;
 	}
 
-	r = RegCreateKeyEx(	hKey, 
-					"LRU", 
-					0, 
-					NULL,
-					REG_OPTION_NON_VOLATILE,
-					KEY_ALL_ACCESS,
-					NULL,
-					&hKey_v,
-					&res);
+	r = RegCreateKeyEx(hKey,"LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,&res);
 	if( r != ERROR_SUCCESS) 
 		return FALSE;
 	if(RegQueryValueEx(hKey_v, "NrLRU", 0, NULL, (unsigned char *)&tmp_dword, &value_size) != ERROR_SUCCESS) {
@@ -329,10 +300,10 @@ void WinMTRDialog::OnSizing(UINT fwSide, LPRECT pRect)
 	int iWidth = (pRect->right)-(pRect->left);
 	int iHeight = (pRect->bottom)-(pRect->top);
 
-	if (iWidth < 600)
-		pRect->right = pRect->left + 600;
-	if (iHeight <250)
-		pRect->bottom = pRect->top + 250;
+	if (iWidth<638)
+		pRect->right = pRect->left+638;
+	if (iHeight<388)
+		pRect->bottom = pRect->top+388;
 }
 
 
@@ -341,50 +312,41 @@ void WinMTRDialog::OnSizing(UINT fwSide, LPRECT pRect)
 //
 // 
 //*****************************************************************************
+/// @todo (White-Tiger#1#): simplify it... use initial positions from "right" to calculate new position (no fix values here)
 void WinMTRDialog::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
-	CRect r;
-	GetClientRect(&r);
-	CRect lb;
+	CRect rct,lb;
+	if(!IsWindow(m_staticS.m_hWnd)) return;
+	GetClientRect(&rct);
+	m_staticS.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_staticS.SetWindowPos(NULL, lb.TopLeft().x, lb.TopLeft().y, rct.Width()-lb.TopLeft().x-8, lb.Height() , SWP_NOMOVE | SWP_NOZORDER);
+
+	m_staticJ.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_staticJ.SetWindowPos(NULL, lb.TopLeft().x, lb.TopLeft().y, rct.Width() - 16, lb.Height(), SWP_NOMOVE | SWP_NOZORDER);
+
+	m_buttonOptions.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_buttonOptions.SetWindowPos(NULL, rct.Width() - lb.Width()-52-16, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
+	m_buttonExit.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_buttonExit.SetWindowPos(NULL, rct.Width() - lb.Width()-16, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
 	
-	if (::IsWindow(m_staticS.m_hWnd)) {
-		m_staticS.GetWindowRect(&lb);
-		ScreenToClient(&lb);
-		m_staticS.SetWindowPos(NULL, lb.TopLeft().x, lb.TopLeft().y, r.Width()-lb.TopLeft().x-10, lb.Height() , SWP_NOMOVE | SWP_NOZORDER);
-	}
+	m_buttonExpH.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_buttonExpH.SetWindowPos(NULL, rct.Width() - lb.Width()-16, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
+	m_buttonExpT.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_buttonExpT.SetWindowPos(NULL, rct.Width() - lb.Width()- 103, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
 
-	if (::IsWindow(m_staticJ.m_hWnd)) {
-		m_staticJ.GetWindowRect(&lb);
-		ScreenToClient(&lb);
-		m_staticJ.SetWindowPos(NULL, lb.TopLeft().x, lb.TopLeft().y, r.Width() - 21, lb.Height(), SWP_NOMOVE | SWP_NOZORDER);
-	}
-
-	if (::IsWindow(m_buttonExit.m_hWnd)) {
-		m_buttonExit.GetWindowRect(&lb);
-		ScreenToClient(&lb);
-		m_buttonExit.SetWindowPos(NULL, r.Width() - lb.Width()-21, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
-	}
-	
-	if (::IsWindow(m_buttonExpH.m_hWnd)) {
-		m_buttonExpH.GetWindowRect(&lb);
-		ScreenToClient(&lb);
-		m_buttonExpH.SetWindowPos(NULL, r.Width() - lb.Width()-21, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
-	}
-	if (::IsWindow(m_buttonExpT.m_hWnd)) {
-		m_buttonExpT.GetWindowRect(&lb);
-		ScreenToClient(&lb);
-		m_buttonExpT.SetWindowPos(NULL, r.Width() - lb.Width()- 103, lb.TopLeft().y, lb.Width(), lb.Height() , SWP_NOSIZE | SWP_NOZORDER);
-	}
-
-	if (::IsWindow(m_listMTR.m_hWnd)) {
-		m_listMTR.GetWindowRect(&lb);
-		ScreenToClient(&lb);
-		m_listMTR.SetWindowPos(NULL, lb.TopLeft().x, lb.TopLeft().y, r.Width() - 21, r.Height() - lb.top - 25, SWP_NOMOVE | SWP_NOZORDER);
-	}
+	m_listMTR.GetWindowRect(&lb);
+	ScreenToClient(&lb);
+	m_listMTR.SetWindowPos(NULL, lb.TopLeft().x, lb.TopLeft().y, rct.Width() - 17, rct.Height() - lb.top - 25, SWP_NOMOVE | SWP_NOZORDER);
 
 	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST,
-				   0, reposQuery, r);
+				   0, reposQuery, rct);
 
 	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, 0);
 
@@ -435,46 +397,38 @@ HCURSOR WinMTRDialog::OnQueryDragIcon()
 // WinMTRDialog::OnDblclkList
 //
 //*****************************************************************************
-void WinMTRDialog::OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult)
+void WinMTRDialog::OnDblclkList(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
-	*pResult = 0;
-
-	if(state == TRACING) {
+	*pResult=0;
+	if(state==TRACING || state==IDLE || state==STOPPING) {
 		
 		POSITION pos = m_listMTR.GetFirstSelectedItemPosition();
 		if(pos!=NULL) {
 			int nItem = m_listMTR.GetNextSelectedItem(pos);
 			WinMTRProperties wmtrprop;
-
-			if(wmtrnet->GetAddr(nItem)==0) {
+			
+			union{sockaddr* addr;sockaddr_in* addr4;sockaddr_in6* addr6;};
+			addr=wmtrnet->GetAddr(nItem);
+			if(!(addr4->sin_family==AF_INET&&addr4->sin_addr.s_addr) && !(addr6->sin6_family==AF_INET6&&(addr6->sin6_addr.u.Word[0]|addr6->sin6_addr.u.Word[1]|addr6->sin6_addr.u.Word[2]|addr6->sin6_addr.u.Word[3]|addr6->sin6_addr.u.Word[4]|addr6->sin6_addr.u.Word[5]|addr6->sin6_addr.u.Word[6]|addr6->sin6_addr.u.Word[7]))){
 				strcpy(wmtrprop.host,"");
 				strcpy(wmtrprop.ip,"");
 				wmtrnet->GetName(nItem, wmtrprop.comment);
-
-				wmtrprop.pck_loss = wmtrprop.pck_sent = wmtrprop.pck_recv = 0;
-
-				wmtrprop.ping_avrg = wmtrprop.ping_last = 0.0;
-				wmtrprop.ping_best = wmtrprop.ping_worst = 0.0;
-			} else {
+			}else{
 				wmtrnet->GetName(nItem, wmtrprop.host);
-				int addr = wmtrnet->GetAddr(nItem);
-				sprintf (	wmtrprop.ip , "%d.%d.%d.%d", 
-							(addr >> 24) & 0xff, 
-							(addr >> 16) & 0xff, 
-							(addr >> 8) & 0xff, 
-							addr & 0xff
-				);
-				strcpy(wmtrprop.comment , "Host alive.");
-
-				wmtrprop.ping_avrg = (float)wmtrnet->GetAvg(nItem); 
-				wmtrprop.ping_last = (float)wmtrnet->GetLast(nItem); 
-				wmtrprop.ping_best = (float)wmtrnet->GetBest(nItem);
-				wmtrprop.ping_worst = (float)wmtrnet->GetWorst(nItem); 
-
-				wmtrprop.pck_loss = wmtrnet->GetPercent(nItem);
-				wmtrprop.pck_recv = wmtrnet->GetReturned(nItem);
-				wmtrprop.pck_sent = wmtrnet->GetXmit(nItem);
+				if(getnameinfo(addr,sizeof(sockaddr_in6),wmtrprop.ip,40,NULL,0,NI_NUMERICHOST)){
+					*wmtrprop.ip='\0';
+				}
+				strcpy(wmtrprop.comment, "Host alive.");
 			}
+
+			wmtrprop.ping_avrg = (float)wmtrnet->GetAvg(nItem); 
+			wmtrprop.ping_last = (float)wmtrnet->GetLast(nItem); 
+			wmtrprop.ping_best = (float)wmtrnet->GetBest(nItem);
+			wmtrprop.ping_worst = (float)wmtrnet->GetWorst(nItem); 
+
+			wmtrprop.pck_loss = wmtrnet->GetPercent(nItem);
+			wmtrprop.pck_recv = wmtrnet->GetReturned(nItem);
+			wmtrprop.pck_sent = wmtrnet->GetXmit(nItem);
 
 			wmtrprop.DoModal();
 		}
@@ -497,7 +451,7 @@ void WinMTRDialog::SetHostName(const char *host)
 // WinMTRDialog::SetPingSize
 //
 //*****************************************************************************
-void WinMTRDialog::SetPingSize(int ps)
+void WinMTRDialog::SetPingSize(WORD ps)
 {
 	pingsize = ps;
 }
@@ -547,44 +501,35 @@ void WinMTRDialog::OnRestart()
 	}
 
 	CString sHost;
-
 	if(state == IDLE) {
 		m_comboHost.GetWindowText(sHost);
-		sHost.TrimLeft();
-		sHost.TrimLeft();
-      
+		sHost.TrimLeft(); sHost.TrimRight();
 		if(sHost.IsEmpty()) {
 			AfxMessageBox("No host specified!");
 			m_comboHost.SetFocus();
 			return ;
 		}
 		m_listMTR.DeleteAllItems();
-	}
 
-	if(state == IDLE) {
-
+		HKEY hKey; DWORD tmp_dword;
+		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,&tmp_dword)==ERROR_SUCCESS){
+			tmp_dword=m_checkIPv6.GetCheck();
+			useIPv6=(unsigned char)tmp_dword;
+			RegSetValueEx(hKey,"UseIPv6",0,REG_DWORD,(const unsigned char*)&tmp_dword,sizeof(DWORD));
+			RegCloseKey(hKey);
+		}
 		if(InitMTRNet()) {
 			if(m_comboHost.FindString(-1, sHost) == CB_ERR) {
 				m_comboHost.InsertString(m_comboHost.GetCount() - 1,sHost);
-
-				HKEY hKey;
-				DWORD tmp_dword;
-				LONG r;
 				char key_name[20];
-
-				r = RegOpenKeyEx(	HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS,&hKey);
-				r = RegOpenKeyEx(	hKey, "WinMTR", 0, KEY_ALL_ACCESS, &hKey);
-				r = RegOpenKeyEx(	hKey, "LRU", 0, KEY_ALL_ACCESS, &hKey);
-
-				if(nrLRU >= maxLRU)
-					nrLRU = 0;
-				
-				nrLRU++;
-				sprintf(key_name, "Host%d", nrLRU);
-				r = RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char *)(LPCTSTR)sHost, strlen((LPCTSTR)sHost)+1);
-				tmp_dword = nrLRU;
-				r = RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
-				RegCloseKey(hKey);
+				if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,&tmp_dword)==ERROR_SUCCESS){
+					if(++nrLRU>maxLRU) nrLRU=0;
+					sprintf(key_name, "Host%d", nrLRU);
+					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)strlen((LPCTSTR)sHost)+1);
+					tmp_dword = nrLRU;
+					RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+					RegCloseKey(hKey);
+				}
 			}
 			Transit(TRACING);
 		}
@@ -610,7 +555,7 @@ void WinMTRDialog::OnOptions()
 
 	if(IDOK == optDlg.DoModal()) {
 
-		pingsize = optDlg.GetPingSize();
+		pingsize = (WORD)optDlg.GetPingSize();
 		interval = optDlg.GetInterval();
 		maxLRU = optDlg.GetMaxLRU();
 		useDNS = optDlg.GetUseDNS();
@@ -893,10 +838,10 @@ int WinMTRDialog::DisplayRedraw()
 	int nh = wmtrnet->GetMax();
 	while( m_listMTR.GetItemCount() > nh ) m_listMTR.DeleteItem(m_listMTR.GetItemCount() - 1);
 
-	for(int i=0;i <nh ; i++) {
+	for(int i=0;i <nh ; ++i) {
 
 		wmtrnet->GetName(i, buf);
-		if( strcmp(buf,"")==0 ) strcpy(buf,"No response from host");
+		if(!*buf) strcpy(buf,"No response from host");
 		
 		sprintf(nr_crt, "%d", i+1);
 		if(m_listMTR.GetItemCount() <= i )
@@ -941,35 +886,33 @@ int WinMTRDialog::DisplayRedraw()
 //*****************************************************************************
 int WinMTRDialog::InitMTRNet()
 {
-	char strtmp[255];
-	char *Hostname = strtmp;
+	char hostname[255];
 	char buf[255];
-	struct hostent *host;
-	m_comboHost.GetWindowText(strtmp, 255);
-   	
-	if (Hostname == NULL) Hostname = "localhost";
-   
-	int isIP=1;
-	char *t = Hostname;
-	while(*t) {
-		if(!isdigit(*t) && *t!='.') {
-			isIP=0;
-			break;
-		}
-		t++;
-	}
-
-	if(!isIP) {
-		sprintf(buf, "Resolving host %s...", strtmp);
-		statusBar.SetPaneText(0,buf);
-		host = gethostbyname(Hostname);
-		if(host == NULL) {
-			statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME) );
-			AfxMessageBox("Unable to resolve hostname.");
-			return 0;
+	m_comboHost.GetWindowText(hostname, 255);
+	
+	sprintf(buf, "Resolving host %s...", hostname);
+	statusBar.SetPaneText(0,buf);
+	
+	addrinfo nfofilter={0};
+	addrinfo* anfo;
+	if(wmtrnet->hasIPv6){
+		switch(useIPv6){
+		case 0:
+			nfofilter.ai_family=AF_INET;break;
+		case 1:
+			nfofilter.ai_family=AF_INET6;break;
+		default:
+			nfofilter.ai_family=AF_UNSPEC;
 		}
 	}
-
+	nfofilter.ai_socktype=SOCK_RAW;
+	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
+	if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo){
+		statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME) );
+		AfxMessageBox("Unable to resolve hostname.");
+		return 0;
+	}
+	freeaddrinfo(anfo);
 	return 1;
 }
 
@@ -984,44 +927,31 @@ void PingThread(void *p)
 	WinMTRDialog *wmtrdlg = (WinMTRDialog *)p;
 	WaitForSingleObject(wmtrdlg->traceThreadMutex, INFINITE);
 
-	struct hostent *host, *lhost;
-	char strtmp[255];
-	char *Hostname = strtmp;
-	int traddr;
-	int localaddr;
+	char hostname[255];
+	wmtrdlg->m_comboHost.GetWindowText(hostname, 255);
 
-	wmtrdlg->m_comboHost.GetWindowText(strtmp, 255);
-   	
-	if (Hostname == NULL) Hostname = "localhost";
-   
-	int isIP=1;
-	char *t = Hostname;
-	while(*t) {
-		if(!isdigit(*t) && *t!='.') {
-			isIP=0;
-			break;
+	addrinfo nfofilter={0};
+	addrinfo* anfo;
+	if(wmtrdlg->wmtrnet->hasIPv6){
+		switch(wmtrdlg->useIPv6){
+		case 0:
+			nfofilter.ai_family=AF_INET;break;
+		case 1:
+			nfofilter.ai_family=AF_INET6;break;
+		default:
+			nfofilter.ai_family=AF_UNSPEC;
 		}
-		t++;
 	}
-
-	if(!isIP) {
-      host = gethostbyname(Hostname);
-      traddr = *(int *)host->h_addr;
-	} else
-      traddr = inet_addr(Hostname);
-
-	lhost = gethostbyname("localhost");
-	if(lhost == NULL) {
-      AfxMessageBox("Unable to get local IP address.");
-      ReleaseMutex(wmtrdlg->traceThreadMutex);
-      return;
+	nfofilter.ai_socktype=SOCK_RAW;
+	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
+	if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo){//we use first address returned
+		AfxMessageBox("Unable to resolve hostname. (again)");
+		ReleaseMutex(wmtrdlg->traceThreadMutex);
+		return;
 	}
-	localaddr = *(int *)lhost->h_addr;
-	
-	wmtrdlg->wmtrnet->DoTrace(traddr);
-
+	wmtrdlg->wmtrnet->DoTrace(anfo->ai_addr);
+	freeaddrinfo(anfo);
 	ReleaseMutex(wmtrdlg->traceThreadMutex);
-   _endthread();
 }
 
 
@@ -1137,56 +1067,52 @@ void WinMTRDialog::Transit(STATES new_state)
 
 	// modify controls according to new state
 	switch(transition) {
+		case IDLE_TO_IDLE:
+			// nothing to be done
+		break;
 		case IDLE_TO_TRACING:
 			m_buttonStart.EnableWindow(FALSE);
 			m_buttonStart.SetWindowText("Stop");
 			m_comboHost.EnableWindow(FALSE);
+			m_checkIPv6.EnableWindow(FALSE);
 			m_buttonOptions.EnableWindow(FALSE);
 			statusBar.SetPaneText(0, "Double click on host name for more information.");
 			_beginthread(PingThread, 0 , this);
 			m_buttonStart.EnableWindow(TRUE);
-		break;
-		case IDLE_TO_IDLE:
-			// nothing to be done
-		break;
-		case STOPPING_TO_IDLE:
-			m_buttonStart.EnableWindow(TRUE);
-			statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME) );
-			m_buttonStart.SetWindowText("Start");
-			m_comboHost.EnableWindow(TRUE);
-			m_buttonOptions.EnableWindow(TRUE);
-			m_comboHost.SetFocus();
-		break;
-		case STOPPING_TO_STOPPING:
-			DisplayRedraw();
-		break;
-		case TRACING_TO_TRACING:
-			DisplayRedraw();
-		break;
-		case TRACING_TO_STOPPING:
-			m_buttonStart.EnableWindow(FALSE);
-			m_comboHost.EnableWindow(FALSE);
-			m_buttonOptions.EnableWindow(FALSE);
-			wmtrnet->StopTrace();
-			statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
-			DisplayRedraw();
 		break;
 		case IDLE_TO_EXIT:
 			m_buttonStart.EnableWindow(FALSE);
 			m_comboHost.EnableWindow(FALSE);
 			m_buttonOptions.EnableWindow(FALSE);
 		break;
-		case TRACING_TO_EXIT:
-			m_buttonStart.EnableWindow(FALSE);
-			m_comboHost.EnableWindow(FALSE);
-			m_buttonOptions.EnableWindow(FALSE);
-			wmtrnet->StopTrace();
-			statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
+		case STOPPING_TO_IDLE:
+			DisplayRedraw();
+			m_buttonStart.EnableWindow(TRUE);
+			statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME) );
+			m_buttonStart.SetWindowText("Start");
+			m_comboHost.EnableWindow(TRUE);
+			m_checkIPv6.EnableWindow(TRUE);
+			m_buttonOptions.EnableWindow(TRUE);
+			m_comboHost.SetFocus();
+		break;
+		case STOPPING_TO_STOPPING:
+			DisplayRedraw();
 		break;
 		case STOPPING_TO_EXIT:
+		break;
+		case TRACING_TO_TRACING:
+			DisplayRedraw();
+		break;
+		case TRACING_TO_STOPPING:
 			m_buttonStart.EnableWindow(FALSE);
-			m_comboHost.EnableWindow(FALSE);
-			m_buttonOptions.EnableWindow(FALSE);
+			wmtrnet->StopTrace();
+			statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
+			DisplayRedraw();
+		break;
+		case TRACING_TO_EXIT:
+			m_buttonStart.EnableWindow(FALSE);
+			wmtrnet->StopTrace();
+			statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
 		break;
 		default:
 			TRACE_MSG("Unknown transition " << transition);
@@ -1196,22 +1122,18 @@ void WinMTRDialog::Transit(STATES new_state)
 
 void WinMTRDialog::OnTimer(UINT_PTR nIDEvent)
 {
-	static unsigned int call_count = 0;
-	call_count += 1;
-
+	static unsigned int call_count=0;
 	if(state == EXIT && WaitForSingleObject(traceThreadMutex, 0) == WAIT_OBJECT_0) {
 		ReleaseMutex(traceThreadMutex);
 		OnOK();
 	}
 
-
 	if( WaitForSingleObject(traceThreadMutex, 0) == WAIT_OBJECT_0 ) {
 		ReleaseMutex(traceThreadMutex);
 		Transit(IDLE);
-	} else if( (call_count % 10 == 0) && (WaitForSingleObject(traceThreadMutex, 0) == WAIT_TIMEOUT) ) {
-		ReleaseMutex(traceThreadMutex);
-		if( state == TRACING) Transit(TRACING);
-		else if( state == STOPPING) Transit(STOPPING);
+	}else if((++call_count&5)==5){
+		if(state==TRACING) Transit(TRACING);
+		else if(state==STOPPING) Transit(STOPPING);
 	}
 
 	CDialog::OnTimer(nIDEvent);

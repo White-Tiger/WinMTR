@@ -60,7 +60,7 @@ LRESULT WinMTRStatusBar::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 void WinMTRStatusBar::RepositionControls()
 {
-	HDWP _hDWP = ::BeginDeferWindowPos( m_arrPaneControls.GetSize() );
+	HDWP _hDWP = ::BeginDeferWindowPos( (int)m_arrPaneControls.GetSize() );
 	
 	CRect rcClient;
 	GetClientRect(&rcClient);
@@ -170,7 +170,7 @@ BOOL WinMTRStatusBar::AddPane(
 		arrPanesTmp.Add(pNewPane);
 	}
 	
-	int nPanesCount = arrPanesTmp.GetSize();
+	int nPanesCount = (int)arrPanesTmp.GetSize();
 	UINT* lpIDArray = new UINT[ nPanesCount ];
 	for (iIndex = 0; iIndex < nPanesCount; iIndex++) {
 		lpIDArray[iIndex] = arrPanesTmp[iIndex]->nID;
@@ -232,7 +232,7 @@ BOOL WinMTRStatusBar::RemovePane(
 	}
 	
 	// set the indicators
-	SetIndicators(lpIDArray, arrPanesTmp.GetSize());
+	SetIndicators(lpIDArray, (int)arrPanesTmp.GetSize());
 	// free memory
 	for (nIndex = 0; nIndex < arrPanesTmp.GetSize(); nIndex++){
 		_STATUSBAR_PANE_* pPane = arrPanesTmp[nIndex];
