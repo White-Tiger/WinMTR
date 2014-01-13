@@ -3,8 +3,8 @@ WinMTR (Redux)
 **WinMTR (Redux)** in an extended fork of [Appnor's WinMTR](http://winmtr.net/) ([sourceforge](http://sourceforge.net/projects/winmtr/)) <br>
 with IPv6 support and other different enhancements and bug fixes
 
-### Download
-* [view all available versions](https://github.com/White-Tiger/WinMTR/releases)
+### Download (binaries)
+* [**view all available**](https://github.com/White-Tiger/WinMTR/releases)
 
 #### Differences to [WinMTR](http://winmtr.net/) 0.98
 - `[x]` - removed Windows 2000 support <br>
@@ -18,6 +18,12 @@ this should improve performance and reduces network load* <br>
 - `[ ]` ! CTRL+A works for host input <br>
 - `[ ]` + host history: pressing del key or right mouse will remove selected entry <br>
 - `[ ]` * new icon <br>
+
+### Requirements
+* Windows XP+ *(Windows 2000 support can be added on request, but IPv6 will not work)*
+* Microsoft Visual C++ 2010 Redistributables
+([32bit](http://microsoft.com/en-us/download/details.aspx?id=5555) |
+[64bit](http://microsoft.com/en-us/download/details.aspx?id=14632)) or use static build
 
 ### About me / why I decided to create this fork
 There isn't that much to say actually, I've been using IPv6 for a few years now thanks to [**SixXS**](http://sixxs.net/)
