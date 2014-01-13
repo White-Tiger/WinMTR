@@ -3,10 +3,10 @@
 //
 //
 // DESCRIPTION:
-//   
+//
 //
 // NOTES:
-//    
+//
 //
 //*****************************************************************************
 
@@ -30,20 +30,20 @@ class WinMTRDialog : public CDialog
 public:
 	WinMTRDialog(CWnd* pParent = NULL);
 	~WinMTRDialog();
-
+	
 	enum { IDD = IDD_WINMTR_DIALOG };
-
+	
 	afx_msg BOOL InitRegistry();
-
+	
 	WinMTRStatusBar	statusBar;
-
+	
 	enum STATES {
 		IDLE,
 		TRACING,
 		STOPPING,
 		EXIT
 	};
-
+	
 	enum STATE_TRANSITIONS {
 		IDLE_TO_IDLE,
 		IDLE_TO_TRACING,
@@ -55,7 +55,7 @@ public:
 		STOPPING_TO_STOPPING,
 		STOPPING_TO_EXIT
 	};
-
+	
 	CButton	m_buttonOptions;
 	CButton	m_buttonExit;
 	CButton	m_buttonStart;
@@ -63,21 +63,21 @@ public:
 	CButton m_checkIPv6;
 	CListCtrl m_listMTR;
 	CMFCLinkCtrl m_buttonAppnor;
-
+	
 	CStatic	m_staticS;
 	CStatic	m_staticJ;
-
+	
 	CButton	m_buttonExpT;
 	CButton	m_buttonExpH;
 	
 	int InitMTRNet();
-
+	
 	int DisplayRedraw();
 	void Transit(STATES new_state);
-
+	
 	STATES				state;
 	STATE_TRANSITIONS	transition;
-	HANDLE				traceThreadMutex; 
+	HANDLE				traceThreadMutex;
 	double				interval;
 	bool				hasIntervalFromCmdLine;
 	WORD				pingsize;
@@ -90,35 +90,35 @@ public:
 	unsigned char		useIPv6;
 	bool				hasUseIPv6FromCmdLine;
 	WinMTRNet*			wmtrnet;
-
-	void SetHostName(const char *host);
+	
+	void SetHostName(const char* host);
 	void SetInterval(float i);
 	void SetPingSize(WORD ps);
 	void SetMaxLRU(int mlru);
 	void SetUseDNS(BOOL udns);
-
+	
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
-
+	
 	int m_autostart;
 	char msz_defaulthostname[1000];
 	
 	HICON m_hIcon;
-
+	
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT, int, int);
-	afx_msg void OnSizing(UINT, LPRECT); 
+	afx_msg void OnSizing(UINT, LPRECT);
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnRestart();
 	afx_msg void OnOptions();
 	virtual void OnCancel();
-
+	
 	afx_msg void OnCTTC();
 	afx_msg void OnCHTC();
 	afx_msg void OnEXPT();
 	afx_msg void OnEXPH();
-
+	
 	afx_msg void OnDblclkList(NMHDR* pNMHDR, LRESULT* pResult);
 	
 	DECLARE_MESSAGE_MAP()

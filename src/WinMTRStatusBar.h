@@ -7,14 +7,15 @@ class WinMTRStatusBar : public CStatusBar
 public:
 
 	WinMTRStatusBar();
-
+	
 // Attributes
 public:
 
 	// Operations
 public:
-	
-	int GetPanesCount() const{
+
+	int GetPanesCount() const
+	{
 		return m_nCount;
 	}
 	
@@ -29,38 +30,38 @@ public:
 	BOOL AddPane(
 		UINT nID,	// ID of the  pane
 		int nIndex	// index of the pane
-		);
-
+	);
+	
 	BOOL RemovePane(
 		UINT nID	// ID of the pane
-		);
-
+	);
+	
 	BOOL AddPaneControl(CWnd* pWnd, UINT nID, BOOL bAutoDestroy)
 	{
-		return AddPaneControl( pWnd->GetSafeHwnd(), nID, bAutoDestroy);
+		return AddPaneControl(pWnd->GetSafeHwnd(), nID, bAutoDestroy);
 	}
 	
 	BOOL AddPaneControl(HWND hWnd, UINT nID, BOOL bAutoDestroy);
 	
-	void DisableControl( int nIndex, BOOL bDisable=TRUE)
+	void DisableControl(int nIndex, BOOL bDisable=TRUE)
 	{
 		UINT uItemID = GetItemID(nIndex);
-		for ( int i = 0; i < m_arrPaneControls.GetSize(); i++ ){
-			if( uItemID == m_arrPaneControls[i]->nID ){
-				if( m_arrPaneControls[i]->hWnd && ::IsWindow(m_arrPaneControls[i]->hWnd) ) {
-					::EnableWindow(m_arrPaneControls[i]->hWnd, bDisable); 
+		for(int i = 0; i < m_arrPaneControls.GetSize(); i++) {
+			if(uItemID == m_arrPaneControls[i]->nID) {
+				if(m_arrPaneControls[i]->hWnd && ::IsWindow(m_arrPaneControls[i]->hWnd)) {
+					::EnableWindow(m_arrPaneControls[i]->hWnd, bDisable);
 				}
 			}
 		}
 	}
-
+	
 	void SetPaneInfo(int nIndex, UINT nID, UINT nStyle, int cxWidth)
 	{
 		CStatusBar::SetPaneInfo(nIndex, nID, nStyle, cxWidth);
 		BOOL bDisabled = ((nStyle&SBPS_DISABLED) == 0);
 		DisableControl(nIndex, bDisabled);
 	}
-
+	
 	void SetPaneStyle(int nIndex, UINT nStyle)
 	{
 		CStatusBar::SetPaneStyle(nIndex, nStyle);
@@ -72,16 +73,16 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(WinMTRStatusBar)
 	//}}AFX_VIRTUAL
-
+	
 // Implementation
 public:
 	virtual ~WinMTRStatusBar();
-
+	
 protected:
 
-	struct _STATUSBAR_PANE_
-	{
-		_STATUSBAR_PANE_(){
+	struct _STATUSBAR_PANE_ {
+		_STATUSBAR_PANE_()
+		{
 			nID = cxText = nStyle = nFlags = 0;
 		}
 		
@@ -94,14 +95,13 @@ protected:
 		CString strText;    // text in the pane
 	};
 	
-	struct _STATUSBAR_PANE_CTRL_
-	{
+	struct _STATUSBAR_PANE_CTRL_ {
 		HWND hWnd;
 		UINT nID;
-		BOOL bAutoDestroy;		
+		BOOL bAutoDestroy;
 	};
 	
-	CArray < _STATUSBAR_PANE_CTRL_*, _STATUSBAR_PANE_CTRL_* > m_arrPaneControls; 
+	CArray < _STATUSBAR_PANE_CTRL_*, _STATUSBAR_PANE_CTRL_* > m_arrPaneControls;
 	
 	_STATUSBAR_PANE_* GetPanePtr(int nIndex) const
 	{

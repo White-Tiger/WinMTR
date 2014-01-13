@@ -13,8 +13,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static const char LICENCE_TEXT_1[]={
-"		    GNU GENERAL PUBLIC LICENSE\r\n\
+static const char LICENCE_TEXT_1[]= {
+	"		    GNU GENERAL PUBLIC LICENSE\r\n\
 		       Version 2, June 1991\r\n\
 			   \r\n\
  Copyright (C) 1989, 1991 Free Software Foundation, Inc.\r\n\
@@ -293,9 +293,10 @@ YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER\r\n\
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE\r\n\
 POSSIBILITY OF SUCH DAMAGES.\r\n\
 \r\n\
-		     END OF TERMS AND CONDITIONS\r\n"};
-static const char LICENCE_TEXT_2[]={
-"\r\n\
+		     END OF TERMS AND CONDITIONS\r\n"
+};
+static const char LICENCE_TEXT_2[]= {
+	"\r\n\
 	    How to Apply These Terms to Your New Programs\r\n\
 \r\n\
   If you develop a new program, and you want it to be of the greatest\r\n\
@@ -354,12 +355,13 @@ This General Public License does not permit incorporating your program into\r\n\
 proprietary programs.  If your program is a subroutine library, you may\r\n\
 consider it more useful to permit linking proprietary applications with the\r\n\
 library.  If this is what you want to do, use the GNU Library General\r\n\
-Public License instead of this License."};
+Public License instead of this License."
+};
 
 //*****************************************************************************
 // BEGIN_MESSAGE_MAP
 //
-// 
+//
 //*****************************************************************************
 BEGIN_MESSAGE_MAP(WinMTRLicense, CDialog)
 END_MESSAGE_MAP()
@@ -368,7 +370,7 @@ END_MESSAGE_MAP()
 //*****************************************************************************
 // WinMTRLicense::WinMTRLicense
 //
-// 
+//
 //*****************************************************************************
 WinMTRLicense::WinMTRLicense(CWnd* pParent) : CDialog(WinMTRLicense::IDD, pParent)
 {
@@ -378,7 +380,7 @@ WinMTRLicense::WinMTRLicense(CWnd* pParent) : CDialog(WinMTRLicense::IDD, pParen
 //*****************************************************************************
 // WinMTRLicense::DoDataExchange
 //
-// 
+//
 //*****************************************************************************
 void WinMTRLicense::DoDataExchange(CDataExchange* pDX)
 {
@@ -389,9 +391,9 @@ void WinMTRLicense::DoDataExchange(CDataExchange* pDX)
 //*****************************************************************************
 // WinMTRLicense::OnInitDialog
 //
-// 
+//
 //*****************************************************************************
-BOOL WinMTRLicense::OnInitDialog() 
+BOOL WinMTRLicense::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	/*

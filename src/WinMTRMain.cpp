@@ -9,14 +9,14 @@
 //
 // - 01.18.2002 - Store LRU hosts in registry (v0.8)
 // - 05.08.2001 - Replace edit box with combo box which hold last entered hostnames.
-//				  Fixed a memory leak which caused program to crash after a long 
+//				  Fixed a memory leak which caused program to crash after a long
 //				  time running. (v0.7)
-// - 11.27.2000 - Added resizing support and flat buttons. (v0.6) 
-// - 11.26.2000 - Added copy data to clipboard and posibility to save data to file as text or HTML.(v0.5) 
+// - 11.27.2000 - Added resizing support and flat buttons. (v0.6)
+// - 11.26.2000 - Added copy data to clipboard and posibility to save data to file as text or HTML.(v0.5)
 // - 08.03.2000 - added double-click on hostname for detailed information (v0.4)
 // - 08.02.2000 - fix icmp error codes handling. (v0.3)
-// - 08.01.2000 - support for full command-line parameter specification (v0.2) 
-// - 07.30.2000 - support for command-line host specification 
+// - 08.01.2000 - support for full command-line parameter specification (v0.2)
+// - 07.30.2000 - support for command-line host specification
 //					by Silviu Simen (ssimen@ubisoft.ro) (v0.1b)
 // - 07.28.2000 - first release (v0.1)
 //*****************************************************************************
@@ -39,7 +39,7 @@ WinMTRMain WinMTR;
 //*****************************************************************************
 // BEGIN_MESSAGE_MAP
 //
-// 
+//
 //*****************************************************************************
 BEGIN_MESSAGE_MAP(WinMTRMain, CWinApp)
 	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
@@ -48,7 +48,7 @@ END_MESSAGE_MAP()
 //*****************************************************************************
 // WinMTRMain::WinMTRMain
 //
-// 
+//
 //*****************************************************************************
 WinMTRMain::WinMTRMain()
 {
@@ -57,32 +57,31 @@ WinMTRMain::WinMTRMain()
 //*****************************************************************************
 // WinMTRMain::InitInstance
 //
-// 
+//
 //*****************************************************************************
 BOOL WinMTRMain::InitInstance()
 {
-	INITCOMMONCONTROLSEX icex={sizeof(INITCOMMONCONTROLSEX),ICC_STANDARD_CLASSES};
+	INITCOMMONCONTROLSEX icex= {sizeof(INITCOMMONCONTROLSEX),ICC_STANDARD_CLASSES};
 	InitCommonControlsEx(&icex);
-	if (!AfxSocketInit())
-	{
+	if(!AfxSocketInit()) {
 		AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
 		return FALSE;
 	}
-
+	
 	AfxEnableControlContainer();
-
-
+	
+	
 	WinMTRDialog mtrDialog;
 	m_pMainWnd = &mtrDialog;
-
-	if (strlen(m_lpCmdLine)) {	
+	
+	if(strlen(m_lpCmdLine)) {
 		strcat(m_lpCmdLine," ");
 		ParseCommandLineParams(m_lpCmdLine, &mtrDialog);
 	}
-
+	
 	mtrDialog.DoModal();
-
-
+	
+	
 	return FALSE;
 }
 
@@ -90,20 +89,20 @@ BOOL WinMTRMain::InitInstance()
 //*****************************************************************************
 // WinMTRMain::ParseCommandLineParams
 //
-// 
+//
 //*****************************************************************************
-void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog *wmtrdlg)
+void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg)
 {
 	char value[1024];
 	std::string host_name = "";
-
+	
 	if(GetParamValue(cmd, "help",'h', value)) {
 		WinMTRHelp mtrHelp;
 		m_pMainWnd = &mtrHelp;
 		mtrHelp.DoModal();
 		exit(0);
 	}
-
+	
 	if(GetHostNameParamValue(cmd, host_name)) {
 		wmtrdlg->SetHostName(host_name.c_str());
 	}
@@ -136,11 +135,11 @@ void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog *wmtrdlg)
 //*****************************************************************************
 // WinMTRMain::GetParamValue
 //
-// 
+//
 //*****************************************************************************
-int WinMTRMain::GetParamValue(LPTSTR cmd, char * param, char sparam, char *value)
+int WinMTRMain::GetParamValue(LPTSTR cmd, char* param, char sparam, char* value)
 {
-	char *p;
+	char* p;
 	
 	char p_long[1024];
 	char p_short[1024];
@@ -148,16 +147,16 @@ int WinMTRMain::GetParamValue(LPTSTR cmd, char * param, char sparam, char *value
 	sprintf(p_long,"--%s ", param);
 	sprintf(p_short,"-%c ", sparam);
 	
-	if( (p=strstr(cmd, p_long)) ) ;
-	else 
+	if((p=strstr(cmd, p_long))) ;
+	else
 		p=strstr(cmd, p_short);
-
+		
 	if(p == NULL)
 		return 0;
-
-	if(!value) 
+		
+	if(!value)
 		return 1;
-
+		
 	while(*p && *p!=' ')
 		p++;
 	while(*p==' ') p++;
@@ -166,14 +165,14 @@ int WinMTRMain::GetParamValue(LPTSTR cmd, char * param, char sparam, char *value
 	while(*p && *p!=' ')
 		value[i++] = *p++;
 	value[i]='\0';
-
+	
 	return 1;
 }
 
 //*****************************************************************************
 // WinMTRMain::GetHostNameParamValue
 //
-// 
+//
 //*****************************************************************************
 int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, std::string& host_name)
 {
@@ -181,12 +180,12 @@ int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, std::string& host_name)
 	size_t size = strlen(cmd);
 	std::string name = "";
 	while(cmd[--size] == ' ');
-
+	
 	size++;
 	while(size-- && cmd[size] != ' ' && (cmd[size] != '-' || cmd[size - 1] != ' ')) {
 		name = cmd[size ] + name;
 	}
-
+	
 	if(size == -1) {
 		if(name.length() == 0) {
 			return 0;
@@ -199,17 +198,17 @@ int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, std::string& host_name)
 		// no target specified
 		return 0;
 	}
-
+	
 	std::string possible_argument = "";
-
+	
 	while(size-- && cmd[size] != ' ') {
 		possible_argument = cmd[size] + possible_argument;
 	}
-
+	
 	if(possible_argument.length() && (possible_argument[0] != '-' || possible_argument == "-n" || possible_argument == "--numeric" || possible_argument == "-6" || possible_argument == "--ipv6" || possible_argument == "-4" || possible_argument == "--ipv4")) {
 		host_name = name;
 		return 1;
 	}
-
+	
 	return 0;
 }

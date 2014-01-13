@@ -3,10 +3,10 @@
 //
 //
 // DESCRIPTION:
-//   
+//
 //
 // NOTES:
-//    
+//
 //
 //*****************************************************************************
 
@@ -25,15 +25,15 @@
 #include <afxdtctl.h>
 
 #ifndef _AFX_NO_AFXCMN_SUPPORT
-  #include <afxcmn.h>
-#endif 
+#include <afxcmn.h>
+#endif
 #include <afxsock.h>
 #include <Iphlpapi.h>//IP_OPTION_INFORMATION32
 #include <ws2tcpip.h>//sockaddr_in6
 
 #include <process.h>
 #include <stdio.h>
-#include <io.h> 
+#include <io.h>
 #include <time.h>
 #include <fcntl.h>
 #include <ctype.h>
@@ -68,7 +68,7 @@
 
 #define MaxTransit 4
 
- 
+
 #define ICMP_ECHO		8
 #define ICMP_ECHOREPLY		0
 
@@ -87,21 +87,21 @@
 #define MTR_NR_COLS 9
 
 const char MTR_COLS[ MTR_NR_COLS ][10] = {
-		"Hostname",
-		"Nr",
-		"Loss %",
-		"Sent",
-		"Recv",
-		"Best",
-		"Avrg",
-		"Worst",
-		"Last"
+	"Hostname",
+	"Nr",
+	"Loss %",
+	"Sent",
+	"Recv",
+	"Best",
+	"Avrg",
+	"Worst",
+	"Last"
 };
 
 const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
-		249, 30, 50, 40, 40, 50, 50, 50, 50
+	249, 30, 50, 40, 40, 50, 50, 50, 50
 };
 
-int gettimeofday(struct timeval* tv, struct timezone *tz);
+int gettimeofday(struct timeval* tv, struct timezone* tz);
 
 #endif // ifndef GLOBAL_H_
