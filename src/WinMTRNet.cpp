@@ -176,14 +176,13 @@ void WinMTRNet::StopTrace()
 	tracing = false;
 }
 
-unsigned WINAPI TraceThread(void *p)
+unsigned WINAPI TraceThread(void* p)
 {
 	trace_thread* current = (trace_thread*)p;
 	WinMTRNet *wmtrnet = current->winmtr;
 	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " started.");
 
-    IPINFO			stIPInfo, *lpstIPInfo;
-    DWORD			dwReplyCount;
+	IPINFO			stIPInfo, *lpstIPInfo;
 	char			achReqData[8192];
 	WORD			nDataLen = wmtrnet->wmtrdlg->pingsize;
 	union{
@@ -191,25 +190,17 @@ unsigned WINAPI TraceThread(void *p)
 		char achRepData[sizeof(ICMPECHO)+8192];
 	};
 
-
-    /*
-     * Init IPInfo structure
-     */
-    lpstIPInfo				= &stIPInfo;
-    stIPInfo.Ttl			= (UCHAR)current->ttl;
-    stIPInfo.Tos			= 0;
-    stIPInfo.Flags			= IPFLAG_DONT_FRAGMENT;
-    stIPInfo.OptionsSize	= 0;
-    stIPInfo.OptionsData	= NULL;
-
-    for (int i=0; i<nDataLen; i++) achReqData[i] = 32; //whitespaces
-
-    while(wmtrnet->tracing) {
-	    
+	lpstIPInfo				= &stIPInfo;
+	stIPInfo.Ttl			= (UCHAR)current->ttl;
+	stIPInfo.Tos			= 0;
+	stIPInfo.Flags			= IPFLAG_DONT_FRAGMENT;
+	stIPInfo.OptionsSize	= 0;
+	stIPInfo.OptionsData	= NULL;
+	for(int i=0; i<nDataLen; ++i) achReqData[i]=32;//whitespaces
+	while(wmtrnet->tracing){
 		// For some strange reason, ICMP API is not filling the TTL for icmp echo reply
 		// Check if the current thread should be closed
-		if( current->ttl > wmtrnet->GetMax() ) break;
-
+		if(current->ttl > wmtrnet->GetMax()) break;
 		// NOTE: some servers does not respond back everytime, if TTL expires in transit; e.g. :
 		// ping -n 20 -w 5000 -l 64 -i 7 www.chinapost.com.tw  -> less that half of the replies are coming back from 219.80.240.93
 		// but if we are pinging ping -n 20 -w 5000 -l 64 219.80.240.93  we have 0% loss
@@ -217,12 +208,10 @@ unsigned WINAPI TraceThread(void *p)
 		// - as soon as we get a hop, we start pinging directly that hop, with a greater TTL
 		// - a drawback would be that, some servers are configured to reply for TTL transit expire, but not to ping requests, so,
 		// for these servers we'll have 100% loss
-		dwReplyCount = wmtrnet->lpfnIcmpSendEcho2(wmtrnet->hICMP, 0,NULL,NULL, current->address, achReqData, nDataLen, lpstIPInfo, achRepData, sizeof(achRepData), ECHO_REPLY_TIMEOUT);
-
+		DWORD dwReplyCount = wmtrnet->lpfnIcmpSendEcho2(wmtrnet->hICMP, 0,NULL,NULL, current->address, achReqData, nDataLen, lpstIPInfo, achRepData, sizeof(achRepData), ECHO_REPLY_TIMEOUT);
 		wmtrnet->AddXmit(current->ttl - 1);
 		if(dwReplyCount){
 			TRACE_MSG("TTL " << (int)current->ttl << " reply TTL " << (int)icmp_echo_reply.Options.Ttl << " Status " << icmp_echo_reply.Status << " Reply count " << dwReplyCount);
-
 			switch(icmp_echo_reply.Status) {
 				case IP_SUCCESS:
 				case IP_TTL_EXPIRED_TRANSIT:
@@ -233,7 +222,6 @@ unsigned WINAPI TraceThread(void *p)
 				default:
 					wmtrnet->SetErrorName(current->ttl - 1, icmp_echo_reply.Status);
 			}
-
 			if((DWORD)(wmtrnet->wmtrdlg->interval * 1000) > icmp_echo_reply.RoundTripTime)
 				Sleep((DWORD)(wmtrnet->wmtrdlg->interval * 1000) - icmp_echo_reply.RoundTripTime);
 		}else{
@@ -245,10 +233,8 @@ unsigned WINAPI TraceThread(void *p)
 				Sleep((DWORD)(wmtrnet->wmtrdlg->interval * 1000));
 			}
 		}
-    } /* end ping loop */
-
+	}//end loop
 	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " stopped.");
-
 	delete p;
 	return 0;
 }
@@ -261,7 +247,6 @@ unsigned WINAPI TraceThread6(void* p)
 	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " started.");
 	
 	IPINFO			stIPInfo, *lpstIPInfo;
-	DWORD			dwReplyCount;
 	char			achReqData[8192];
 	WORD			nDataLen = wmtrnet->wmtrdlg->pingsize;
 	union{
@@ -275,10 +260,10 @@ unsigned WINAPI TraceThread6(void* p)
 	stIPInfo.Flags			= IPFLAG_DONT_FRAGMENT;
 	stIPInfo.OptionsSize	= 0;
 	stIPInfo.OptionsData	= NULL;
-	for(int i=0; i<nDataLen; ++i) achReqData[i]=32;  //whitespaces
+	for(int i=0; i<nDataLen; ++i) achReqData[i]=32;//whitespaces
 	while(wmtrnet->tracing){
 		if(current->ttl > wmtrnet->GetMax()) break;
-		dwReplyCount = wmtrnet->lpfnIcmp6SendEcho2(wmtrnet->hICMP6, 0,NULL,NULL, &sockaddrfrom, &current->address, achReqData, nDataLen, lpstIPInfo, achRepData, sizeof(achRepData), ECHO_REPLY_TIMEOUT);
+		DWORD dwReplyCount = wmtrnet->lpfnIcmp6SendEcho2(wmtrnet->hICMP6, 0,NULL,NULL, &sockaddrfrom, &current->address, achReqData, nDataLen, lpstIPInfo, achRepData, sizeof(achRepData), ECHO_REPLY_TIMEOUT);
 		wmtrnet->AddXmit(current->ttl - 1);
 		if(dwReplyCount) {
 			TRACE_MSG("TTL " << (int)current->ttl << " Status " << icmpv6_echo_reply.Status << " Reply count " << dwReplyCount);

@@ -211,10 +211,10 @@ BOOL WinMTRDialog::OnInitDialog()
 BOOL WinMTRDialog::InitRegistry()
 {
 	HKEY hKey, hKey_v;
-	DWORD res, tmp_dword, value_size;
+	DWORD tmp_dword, value_size;
 	LONG r;
 
-	r = RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,&res);
+	r = RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL);
 	if( r != ERROR_SUCCESS) 
 		return FALSE;
 
@@ -222,7 +222,7 @@ BOOL WinMTRDialog::InitRegistry()
 	RegSetValueEx(hKey,"License", 0, REG_SZ, (const unsigned char *)WINMTR_LICENSE, sizeof(WINMTR_LICENSE)+1);
 	RegSetValueEx(hKey,"HomePage", 0, REG_SZ, (const unsigned char *)WINMTR_HOMEPAGE, sizeof(WINMTR_HOMEPAGE)+1);
 
-	r = RegCreateKeyEx(hKey,"Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,&res);
+	r = RegCreateKeyEx(hKey,"Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
 	if( r != ERROR_SUCCESS) 
 		return FALSE;
 
@@ -262,7 +262,7 @@ BOOL WinMTRDialog::InitRegistry()
 		if(!hasIntervalFromCmdLine) interval = (float)tmp_dword / 1000.0;
 	}
 
-	r = RegCreateKeyEx(hKey,"LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,&res);
+	r = RegCreateKeyEx(hKey,"LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
 	if( r != ERROR_SUCCESS) 
 		return FALSE;
 	if(RegQueryValueEx(hKey_v, "NrLRU", 0, NULL, (unsigned char *)&tmp_dword, &value_size) != ERROR_SUCCESS) {
@@ -274,7 +274,7 @@ BOOL WinMTRDialog::InitRegistry()
 		nrLRU = tmp_dword;
 		for(int i=0;i<maxLRU;i++) {
 			sprintf(key_name,"Host%d", i+1);
-			if((r = RegQueryValueEx(hKey_v, key_name, 0, NULL, NULL, &value_size)) == ERROR_SUCCESS) {
+			if(RegQueryValueEx(hKey_v, key_name, 0, NULL, NULL, &value_size) == ERROR_SUCCESS) {
 				RegQueryValueEx(hKey_v, key_name, 0, NULL, str_host, &value_size);
 				str_host[value_size]='\0';
 				m_comboHost.AddString((CString)str_host);
@@ -512,7 +512,7 @@ void WinMTRDialog::OnRestart()
 		m_listMTR.DeleteAllItems();
 
 		HKEY hKey; DWORD tmp_dword;
-		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,&tmp_dword)==ERROR_SUCCESS){
+		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS){
 			tmp_dword=m_checkIPv6.GetCheck();
 			useIPv6=(unsigned char)tmp_dword;
 			RegSetValueEx(hKey,"UseIPv6",0,REG_DWORD,(const unsigned char*)&tmp_dword,sizeof(DWORD));
@@ -521,8 +521,8 @@ void WinMTRDialog::OnRestart()
 		if(InitMTRNet()) {
 			if(m_comboHost.FindString(-1, sHost) == CB_ERR) {
 				m_comboHost.InsertString(m_comboHost.GetCount() - 1,sHost);
-				char key_name[20];
-				if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,&tmp_dword)==ERROR_SUCCESS){
+				if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS){
+					char key_name[20];
 					if(++nrLRU>maxLRU) nrLRU=0;
 					sprintf(key_name, "Host%d", nrLRU);
 					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)strlen((LPCTSTR)sHost)+1);
@@ -546,13 +546,7 @@ void WinMTRDialog::OnRestart()
 //*****************************************************************************
 void WinMTRDialog::OnOptions() 
 {
-	WinMTROptions optDlg;
-
-	optDlg.SetPingSize(pingsize);
-	optDlg.SetInterval(interval);
-	optDlg.SetMaxLRU(maxLRU);
-	optDlg.SetUseDNS(useDNS);
-
+	WinMTROptions optDlg(interval,pingsize,maxLRU,useDNS);
 	if(IDOK == optDlg.DoModal()) {
 
 		pingsize = (WORD)optDlg.GetPingSize();
@@ -562,34 +556,30 @@ void WinMTRDialog::OnOptions()
 
 		HKEY hKey;
 		DWORD tmp_dword;
-		LONG r;
-		char key_name[20];
 
-		r = RegOpenKeyEx(	HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS,&hKey);
-		r = RegOpenKeyEx(	hKey, "WinMTR", 0, KEY_ALL_ACCESS, &hKey);
-		r = RegOpenKeyEx(	hKey, "Config", 0, KEY_ALL_ACCESS, &hKey);
-		tmp_dword = pingsize;
-		RegSetValueEx(hKey,"PingSize", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
-		tmp_dword = maxLRU;
-		RegSetValueEx(hKey,"MaxLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
-		tmp_dword = useDNS ? 1 : 0;
-		RegSetValueEx(hKey,"UseDNS", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
-		tmp_dword = (DWORD)(interval * 1000);
-		RegSetValueEx(hKey,"Interval", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
-		RegCloseKey(hKey);
-		if(maxLRU<nrLRU) {
-			r = RegOpenKeyEx(	HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS,&hKey);
-			r = RegOpenKeyEx(	hKey, "WinMTR", 0, KEY_ALL_ACCESS, &hKey);
-			r = RegOpenKeyEx(	hKey, "LRU", 0, KEY_ALL_ACCESS, &hKey);
-
-			for(int i = maxLRU; i<=nrLRU; i++) {
-					sprintf(key_name, "Host%d", i);
-					r = RegDeleteValue(hKey,key_name);
-			}
-			nrLRU = maxLRU;
-			tmp_dword = nrLRU;
-			r = RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS){
+			tmp_dword = pingsize;
+			RegSetValueEx(hKey,"PingSize", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+			tmp_dword = maxLRU;
+			RegSetValueEx(hKey,"MaxLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+			tmp_dword = useDNS ? 1 : 0;
+			RegSetValueEx(hKey,"UseDNS", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+			tmp_dword = (DWORD)(interval * 1000);
+			RegSetValueEx(hKey,"Interval", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
 			RegCloseKey(hKey);
+		}
+		if(maxLRU<nrLRU){
+			if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS){
+				char key_name[20];
+				for(int i = maxLRU; i<=nrLRU; ++i){
+					sprintf(key_name, "Host%d", i);
+					RegDeleteValue(hKey,key_name);
+				}
+				nrLRU = maxLRU;
+				tmp_dword = nrLRU;
+				RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+				RegCloseKey(hKey);
+			}
 		}
 	}
 }
@@ -964,20 +954,19 @@ void WinMTRDialog::ClearHistory()
 {
 	HKEY hKey;
 	DWORD tmp_dword;
-	LONG r;
 	char key_name[20];
 
-	r = RegOpenKeyEx(	HKEY_CURRENT_USER, "Software", 0, KEY_ALL_ACCESS,&hKey);
-	r = RegOpenKeyEx(	hKey, "WinMTR", 0, KEY_ALL_ACCESS, &hKey);
-	r = RegOpenKeyEx(	hKey, "LRU", 0, KEY_ALL_ACCESS, &hKey);
+	if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)!=ERROR_SUCCESS){
+		return;
+	}
 
 	for(int i = 0; i<=nrLRU; i++) {
 		sprintf(key_name, "Host%d", i);
-		r = RegDeleteValue(hKey,key_name);
+		RegDeleteValue(hKey,key_name);
 	}
 	nrLRU = 0;
 	tmp_dword = nrLRU;
-	r = RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
+	RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char *)&tmp_dword, sizeof(DWORD));
 	RegCloseKey(hKey);
 
 	m_comboHost.Clear();

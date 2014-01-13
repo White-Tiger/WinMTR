@@ -26,16 +26,6 @@ END_MESSAGE_MAP()
 
 
 //*****************************************************************************
-// WinMTROptions::WinMTROptions
-//
-// 
-//*****************************************************************************
-WinMTROptions::WinMTROptions(CWnd* pParent) : CDialog(WinMTROptions::IDD, pParent)
-{
-}
-
-
-//*****************************************************************************
 // WinMTROptions::DoDataExchange
 //
 // 
