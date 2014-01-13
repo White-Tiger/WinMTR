@@ -12,17 +12,18 @@
 #include <iostream>
 #include <sstream>
 
-#define TRACE_MSG(msg)										\
-	{														\
-		std::ostringstream dbg_msg(std::ostringstream::out);	\
-		dbg_msg << msg << std::endl;							\
-		OutputDebugString(dbg_msg.str().c_str());				\
-	}
-
 #ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static	 char THIS_FILE[] = __FILE__;
+#	define TRACE_MSG(msg)									\
+	{														\
+	std::ostringstream dbg_msg(std::ostringstream::out);	\
+	dbg_msg << msg << std::endl;							\
+	OutputDebugString(dbg_msg.str().c_str());				\
+	}
+#	define new DEBUG_NEW
+#	undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#else
+#	define TRACE_MSG(msg)
 #endif
 
 void PingThread(void* p);
