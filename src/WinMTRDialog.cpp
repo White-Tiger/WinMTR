@@ -77,11 +77,16 @@ WinMTRDialog::WinMTRDialog(CWnd* pParent)
 	hasMaxLRUFromCmdLine = false;
 	hasUseDNSFromCmdLine = false;
 	hasUseIPv6FromCmdLine = false;
-	
-	traceThreadMutex = CreateMutex(NULL, FALSE, NULL);
-	wmtrnet = new WinMTRNet(this);
-	if(!wmtrnet->hasIPv6) m_checkIPv6.EnableWindow(FALSE);
-	useIPv6=2;
+    hasDurationFromCmdLine  = false;
+    hasReportFromCmdLine    = false;
+    hasHostNameFromCmdLine  = false;
+
+    traceThreadMutex = CreateMutex(NULL, FALSE, NULL);
+    wmtrnet = new WinMTRNet(this);
+    if(!wmtrnet->hasIPv6) m_checkIPv6.EnableWindow(FALSE);
+    useIPv6=2;
+
+    exit_code = EXIT_SUCCESS;
 }
 
 WinMTRDialog::~WinMTRDialog()
@@ -443,6 +448,16 @@ void WinMTRDialog::SetHostName(const char* host)
 	strncpy(msz_defaulthostname,host,1000);
 }
 
+//*****************************************************************************
+// WinMTRDialog::GetHostName
+//
+//*****************************************************************************
+#ifdef WIN_MTR_NO_GUI
+const char* WinMTRDialog::GetHostName()
+{
+    return msz_defaulthostname;
+}
+#endif
 
 //*****************************************************************************
 // WinMTRDialog::SetPingSize
@@ -471,6 +486,38 @@ void WinMTRDialog::SetInterval(float i)
 {
 	interval = i;
 }
+//*****************************************************************************
+// WinMTRDialog::GetInterval
+//
+//*****************************************************************************
+
+float WinMTRDialog::GetInterval()
+{
+    return interval;
+}
+
+WinMTRNet* WinMTRDialog::GetWinMTRNetObj()
+{
+    return wmtrnet;
+}
+
+//*****************************************************************************
+// WinMTRDialog::SetDuration
+//
+//*****************************************************************************
+void WinMTRDialog::SetDuration(long d)
+{
+    duration = d;
+}
+//*****************************************************************************
+// WinMTRDialog::GetDuration
+//
+//*****************************************************************************
+long WinMTRDialog::GetDuration()
+{
+    return duration;
+}
+
 
 //*****************************************************************************
 // WinMTRDialog::SetUseDNS
@@ -491,48 +538,71 @@ void WinMTRDialog::SetUseDNS(BOOL udns)
 //*****************************************************************************
 void WinMTRDialog::OnRestart()
 {
-	// If clear history is selected, just clear the registry and listbox and return
-	if(m_comboHost.GetCurSel() == m_comboHost.GetCount() - 1) {
-		ClearHistory();
-		return;
-	}
-	
-	CString sHost;
-	if(state == IDLE) {
-		m_comboHost.GetWindowText(sHost);
-		sHost.TrimLeft(); sHost.TrimRight();
-		if(sHost.IsEmpty()) {
-			AfxMessageBox("No host specified!");
-			m_comboHost.SetFocus();
-			return ;
-		}
-		m_listMTR.DeleteAllItems();
-		
-		HKEY hKey; DWORD tmp_dword;
-		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
-			tmp_dword=m_checkIPv6.GetCheck();
-			useIPv6=(unsigned char)tmp_dword;
-			RegSetValueEx(hKey,"UseIPv6",0,REG_DWORD,(const unsigned char*)&tmp_dword,sizeof(DWORD));
-			RegCloseKey(hKey);
-		}
-		if(InitMTRNet()) {
-			if(m_comboHost.FindString(-1, sHost) == CB_ERR) {
-				m_comboHost.InsertString(m_comboHost.GetCount() - 1,sHost);
-				if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
-					char key_name[20];
-					if(++nrLRU>maxLRU) nrLRU=0;
-					sprintf(key_name, "Host%d", nrLRU);
-					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)strlen((LPCTSTR)sHost)+1);
-					tmp_dword = nrLRU;
-					RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
-					RegCloseKey(hKey);
-				}
-			}
-			Transit(TRACING);
-		}
-	} else {
-		Transit(STOPPING);
-	}
+    // If clear history is selected, just clear the registry and listbox and return
+#ifndef WIN_MTR_NO_GUI
+
+    if(m_comboHost.GetCurSel() == m_comboHost.GetCount() - 1) {
+        ClearHistory();
+        return;
+    }
+#endif	
+    CString sHost;
+
+    if(state == IDLE) {
+#ifndef WIN_MTR_NO_GUI
+        m_comboHost.GetWindowText(sHost);
+        sHost.TrimLeft(); sHost.TrimRight();
+        if(sHost.IsEmpty()) {
+            AfxMessageBox("No host specified!");
+            m_comboHost.SetFocus();
+            return ;
+        }
+        m_listMTR.DeleteAllItems();
+#else
+        if(strcmp(GetHostName(),"") == 0)
+        {
+
+            if(hasReportFromCmdLine)
+            {
+                CString err_msg("\nNo host specified!");
+                WriteConsole(GetStdHandle(STD_ERROR_HANDLE), err_msg, err_msg.GetLength(), NULL, NULL);
+            }
+        }
+#endif	
+        HKEY hKey; DWORD tmp_dword;
+        if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
+#ifndef WIN_MTR_NO_GUI
+            tmp_dword=m_checkIPv6.GetCheck();
+#else
+            tmp_dword = 0;
+#endif	
+            useIPv6=(unsigned char)tmp_dword;
+            RegSetValueEx(hKey,"UseIPv6",0,REG_DWORD,(const unsigned char*)&tmp_dword,sizeof(DWORD));
+            RegCloseKey(hKey);
+        }
+        if(InitMTRNet())
+        {
+#ifndef WIN_MTR_NO_GUI
+            if(m_comboHost.FindString(-1, sHost) == CB_ERR) {
+                m_comboHost.InsertString(m_comboHost.GetCount() - 1,sHost);
+#else 
+            {
+#endif
+                if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
+                    char key_name[20];
+                    if(++nrLRU>maxLRU) nrLRU=0;
+                    sprintf(key_name, "Host%d", nrLRU);
+                    RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)strlen((LPCTSTR)sHost)+1);
+                    tmp_dword = nrLRU;
+                    RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+                    RegCloseKey(hKey);
+                }
+            }
+            Transit(TRACING);
+        }
+    } else {
+        Transit(STOPPING);
+    }
 }
 
 
@@ -697,53 +767,60 @@ void WinMTRDialog::OnCHTC()
 //*****************************************************************************
 void WinMTRDialog::OnEXPT()
 {
-	TCHAR BASED_CODE szFilter[] = _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||");
-	
-	CFileDialog dlg(FALSE,
-					_T("TXT"),
-					NULL,
-					OFN_HIDEREADONLY | OFN_EXPLORER,
-					szFilter,
-					this);
-	if(dlg.DoModal() == IDOK) {
-	
-		char buf[255], t_buf[1000], f_buf[255*100];
-		
-		int nh = wmtrnet->GetMax();
-		
-		strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
-		sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
-		strcat(f_buf, t_buf);
-		sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
-		strcat(f_buf, t_buf);
-		sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
-		strcat(f_buf, t_buf);
-		
-		for(int i=0; i <nh ; i++) {
-			wmtrnet->GetName(i, buf);
-			if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
-			
-			sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
-					buf, wmtrnet->GetPercent(i),
-					wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
-					wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
-			strcat(f_buf, t_buf);
-		}
-		
-		sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
-		strcat(f_buf, t_buf);
-		
-		
-		CString cs_tmp((LPCSTR)IDS_STRING_SB_NAME);
-		strcat(f_buf, "   ");
-		strcat(f_buf, (LPCTSTR)cs_tmp);
-		
-		FILE* fp = fopen(dlg.GetPathName(), "wt");
-		if(fp != NULL) {
-			fprintf(fp, "%s", f_buf);
-			fclose(fp);
-		}
-	}
+#ifndef WIN_MTR_NO_GUI
+    TCHAR BASED_CODE szFilter[] = _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||");
+
+    CFileDialog dlg(FALSE,
+        _T("TXT"),
+        NULL,
+        OFN_HIDEREADONLY | OFN_EXPLORER,
+        szFilter,
+        this);
+    if(dlg.DoModal() == IDOK)
+#endif 
+    {
+
+        char buf[255], t_buf[1000], f_buf[255*100];
+
+        int nh = wmtrnet->GetMax();
+
+        strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
+        sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
+        strcat(f_buf, t_buf);
+        sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
+        strcat(f_buf, t_buf);
+        sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
+        strcat(f_buf, t_buf);
+
+        for(int i=0; i <nh ; i++) {
+            wmtrnet->GetName(i, buf);
+            if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
+
+            sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
+                buf, wmtrnet->GetPercent(i),
+                wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
+                wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
+            strcat(f_buf, t_buf);
+        }
+
+        sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
+        strcat(f_buf, t_buf);
+
+
+        CString cs_tmp((LPCSTR)IDS_STRING_SB_NAME);
+        strcat(f_buf, "   ");
+        strcat(f_buf, (LPCTSTR)cs_tmp);
+#ifdef WIN_MTR_NO_GUI
+        CString report(f_buf);
+        WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), report, report.GetLength(), NULL, NULL);
+#else
+        FILE* fp = fopen(dlg.GetPathName(), "wt");
+        if(fp != NULL) {
+            fprintf(fp, "%s", f_buf);
+            fclose(fp);
+        }
+#endif
+    }
 }
 
 
@@ -873,34 +950,51 @@ int WinMTRDialog::DisplayRedraw()
 //*****************************************************************************
 int WinMTRDialog::InitMTRNet()
 {
-	char hostname[255];
-	char buf[255];
-	m_comboHost.GetWindowText(hostname, 255);
-	
-	sprintf(buf, "Resolving host %s...", hostname);
-	statusBar.SetPaneText(0,buf);
-	
-	addrinfo nfofilter= {0};
-	addrinfo* anfo;
-	if(wmtrnet->hasIPv6) {
-		switch(useIPv6) {
-		case 0:
-			nfofilter.ai_family=AF_INET; break;
-		case 1:
-			nfofilter.ai_family=AF_INET6; break;
-		default:
-			nfofilter.ai_family=AF_UNSPEC;
-		}
-	}
-	nfofilter.ai_socktype=SOCK_RAW;
-	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
-	if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo) {
-		statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
-		AfxMessageBox("Unable to resolve hostname.");
-		return 0;
-	}
-	freeaddrinfo(anfo);
-	return 1;
+    char hostname[255];
+    char buf[255];
+
+#ifndef WIN_MTR_NO_GUI
+    m_comboHost.GetWindowText(hostname, 255);
+
+    sprintf(buf, "Resolving host %s...", hostname);
+    statusBar.SetPaneText(0,buf);
+#else
+    strcpy(hostname, GetHostName());
+#endif
+
+    addrinfo nfofilter= {0};
+    addrinfo* anfo;
+    if(wmtrnet->hasIPv6) 
+    {
+        switch(useIPv6) 
+        {
+        case 0:
+            nfofilter.ai_family=AF_INET; break;
+        case 1:
+            nfofilter.ai_family=AF_INET6; break;
+        default:
+            nfofilter.ai_family=AF_UNSPEC;
+        }
+    }
+    nfofilter.ai_socktype=SOCK_RAW;
+    nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
+    if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo)
+    {
+#ifndef WIN_MTR_NO_GUI
+        statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
+        AfxMessageBox("Unable to resolve hostname.");
+#else
+        if(hasReportFromCmdLine)
+        {
+            CString err_msg("Unable to resolve hostname.");
+            WriteConsole(GetStdHandle(STD_ERROR_HANDLE), err_msg, err_msg.GetLength(), NULL, NULL);
+        }
+        exit_code = EXIT_FAILURE;
+#endif
+        return 0;
+    }
+    freeaddrinfo(anfo);
+    return 1;
 }
 
 
@@ -911,34 +1005,47 @@ int WinMTRDialog::InitMTRNet()
 //*****************************************************************************
 void PingThread(void* p)
 {
-	WinMTRDialog* wmtrdlg = (WinMTRDialog*)p;
-	WaitForSingleObject(wmtrdlg->traceThreadMutex, INFINITE);
-	
-	char hostname[255];
-	wmtrdlg->m_comboHost.GetWindowText(hostname, 255);
-	
-	addrinfo nfofilter= {0};
-	addrinfo* anfo;
-	if(wmtrdlg->wmtrnet->hasIPv6) {
-		switch(wmtrdlg->useIPv6) {
-		case 0:
-			nfofilter.ai_family=AF_INET; break;
-		case 1:
-			nfofilter.ai_family=AF_INET6; break;
-		default:
-			nfofilter.ai_family=AF_UNSPEC;
-		}
-	}
-	nfofilter.ai_socktype=SOCK_RAW;
-	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
-	if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo) { //we use first address returned
-		AfxMessageBox("Unable to resolve hostname. (again)");
-		ReleaseMutex(wmtrdlg->traceThreadMutex);
-		return;
-	}
-	wmtrdlg->wmtrnet->DoTrace(anfo->ai_addr);
-	freeaddrinfo(anfo);
-	ReleaseMutex(wmtrdlg->traceThreadMutex);
+    WinMTRDialog* wmtrdlg = (WinMTRDialog*)p;
+    WaitForSingleObject(wmtrdlg->traceThreadMutex, INFINITE);
+
+    char hostname[255];
+#ifdef WIN_MTR_NO_GUI
+    strcpy(hostname, wmtrdlg->GetHostName());
+#else
+    wmtrdlg->m_comboHost.GetWindowText(hostname, 255);
+#endif
+    addrinfo nfofilter= {0};
+    addrinfo* anfo;
+    if(wmtrdlg->wmtrnet->hasIPv6) {
+        switch(wmtrdlg->useIPv6) {
+        case 0:
+            nfofilter.ai_family=AF_INET; break;
+        case 1:
+            nfofilter.ai_family=AF_INET6; break;
+        default:
+            nfofilter.ai_family=AF_UNSPEC;
+        }
+    }
+    nfofilter.ai_socktype=SOCK_RAW;
+    nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
+    if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo) { //we use first address returned
+
+#ifndef WIN_MTR_NO_GUI
+        AfxMessageBox("Unable to resolve hostname. (again)");
+#else
+        if(wmtrdlg->hasReportFromCmdLine)
+        {
+            CString err_msg("Unable to resolve hostname. (again)");
+            WriteConsole(GetStdHandle(STD_ERROR_HANDLE), err_msg, err_msg.GetLength(), NULL, NULL); 
+        }
+        wmtrdlg->exit_code = EXIT_FAILURE;
+#endif
+        ReleaseMutex(wmtrdlg->traceThreadMutex);
+        return;
+    }
+    wmtrdlg->wmtrnet->DoTrace(anfo->ai_addr);
+    freeaddrinfo(anfo);
+    ReleaseMutex(wmtrdlg->traceThreadMutex);
 }
 
 
@@ -985,124 +1092,143 @@ void WinMTRDialog::OnCbnCloseupComboHost()
 
 void WinMTRDialog::Transit(STATES new_state)
 {
-	switch(new_state) {
-	case IDLE:
-		switch(state) {
-		case STOPPING:
-			transition = STOPPING_TO_IDLE;
-			break;
-		case IDLE:
-			transition = IDLE_TO_IDLE;
-			break;
-		default:
-			TRACE_MSG("Received state IDLE after " << state);
-			return;
-		}
-		state = IDLE;
-		break;
-	case TRACING:
-		switch(state) {
-		case IDLE:
-			transition = IDLE_TO_TRACING;
-			break;
-		case TRACING:
-			transition = TRACING_TO_TRACING;
-			break;
-		default:
-			TRACE_MSG("Received state TRACING after " << state);
-			return;
-		}
-		state = TRACING;
-		break;
-	case STOPPING:
-		switch(state) {
-		case STOPPING:
-			transition = STOPPING_TO_STOPPING;
-			break;
-		case TRACING:
-			transition = TRACING_TO_STOPPING;
-			break;
-		default:
-			TRACE_MSG("Received state STOPPING after " << state);
-			return;
-		}
-		state = STOPPING;
-		break;
-	case EXIT:
-		switch(state) {
-		case IDLE:
-			transition = IDLE_TO_EXIT;
-			break;
-		case STOPPING:
-			transition = STOPPING_TO_EXIT;
-			break;
-		case TRACING:
-			transition = TRACING_TO_EXIT;
-			break;
-		case EXIT:
-			break;
-		default:
-			TRACE_MSG("Received state EXIT after " << state);
-			return;
-		}
-		state = EXIT;
-		break;
-	default:
-		TRACE_MSG("Received state " << state);
-	}
-	
-	// modify controls according to new state
-	switch(transition) {
-	case IDLE_TO_IDLE:
-		// nothing to be done
-		break;
-	case IDLE_TO_TRACING:
-		m_buttonStart.EnableWindow(FALSE);
-		m_buttonStart.SetWindowText("Stop");
-		m_comboHost.EnableWindow(FALSE);
-		m_checkIPv6.EnableWindow(FALSE);
-		m_buttonOptions.EnableWindow(FALSE);
-		statusBar.SetPaneText(0, "Double click on host name for more information.");
-		_beginthread(PingThread, 0 , this);
-		m_buttonStart.EnableWindow(TRUE);
-		break;
-	case IDLE_TO_EXIT:
-		m_buttonStart.EnableWindow(FALSE);
-		m_comboHost.EnableWindow(FALSE);
-		m_buttonOptions.EnableWindow(FALSE);
-		break;
-	case STOPPING_TO_IDLE:
-		DisplayRedraw();
-		m_buttonStart.EnableWindow(TRUE);
-		statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
-		m_buttonStart.SetWindowText("Start");
-		m_comboHost.EnableWindow(TRUE);
-		m_checkIPv6.EnableWindow(TRUE);
-		m_buttonOptions.EnableWindow(TRUE);
-		m_comboHost.SetFocus();
-		break;
-	case STOPPING_TO_STOPPING:
-		DisplayRedraw();
-		break;
-	case STOPPING_TO_EXIT:
-		break;
-	case TRACING_TO_TRACING:
-		DisplayRedraw();
-		break;
-	case TRACING_TO_STOPPING:
-		m_buttonStart.EnableWindow(FALSE);
-		wmtrnet->StopTrace();
-		statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
-		DisplayRedraw();
-		break;
-	case TRACING_TO_EXIT:
-		m_buttonStart.EnableWindow(FALSE);
-		wmtrnet->StopTrace();
-		statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
-		break;
-	default:
-		TRACE_MSG("Unknown transition " << transition);
-	}
+    switch(new_state) {
+    case IDLE:
+        switch(state) {
+        case STOPPING:
+            transition = STOPPING_TO_IDLE;
+            break;
+        case IDLE:
+            transition = IDLE_TO_IDLE;
+            break;
+        default:
+            TRACE_MSG("Received state IDLE after " << state);
+            return;
+        }
+        state = IDLE;
+        break;
+    case TRACING:
+        switch(state) {
+        case IDLE:
+            transition = IDLE_TO_TRACING;
+            break;
+        case TRACING:
+            transition = TRACING_TO_TRACING;
+            break;
+        default:
+            TRACE_MSG("Received state TRACING after " << state);
+            return;
+        }
+        state = TRACING;
+        break;
+    case STOPPING:
+        switch(state) {
+        case STOPPING:
+            transition = STOPPING_TO_STOPPING;
+            break;
+        case TRACING:
+            transition = TRACING_TO_STOPPING;
+            break;
+        default:
+            TRACE_MSG("Received state STOPPING after " << state);
+            return;
+        }
+        state = STOPPING;
+        break;
+    case EXIT:
+        switch(state) {
+        case IDLE:
+            transition = IDLE_TO_EXIT;
+            break;
+        case STOPPING:
+            transition = STOPPING_TO_EXIT;
+            break;
+        case TRACING:
+            transition = TRACING_TO_EXIT;
+            break;
+        case EXIT:
+            break;
+        default:
+            TRACE_MSG("Received state EXIT after " << state);
+            return;
+        }
+        state = EXIT;
+        break;
+    default:
+        TRACE_MSG("Received state " << state);
+    }
+
+    // modify controls according to new state
+    switch(transition) {
+    case IDLE_TO_IDLE:
+        // nothing to be done
+        break;
+    case IDLE_TO_TRACING:
+#ifndef WIN_MTR_NO_GUI
+        m_buttonStart.EnableWindow(FALSE);
+        m_buttonStart.SetWindowText("Stop");
+        m_comboHost.EnableWindow(FALSE);
+        m_checkIPv6.EnableWindow(FALSE);
+        m_buttonOptions.EnableWindow(FALSE);
+        statusBar.SetPaneText(0, "Double click on host name for more information.");
+        m_buttonStart.EnableWindow(TRUE);
+#endif
+        _beginthread(PingThread, 0 , this);
+        break;
+    case IDLE_TO_EXIT:
+#ifndef WIN_MTR_NO_GUI
+
+        m_buttonStart.EnableWindow(FALSE);
+        m_comboHost.EnableWindow(FALSE);
+        m_buttonOptions.EnableWindow(FALSE);
+#endif
+        break;
+    case STOPPING_TO_IDLE:
+#ifndef WIN_MTR_NO_GUI
+        DisplayRedraw();
+        m_buttonStart.EnableWindow(TRUE);
+        statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
+        m_buttonStart.SetWindowText("Start");
+        m_comboHost.EnableWindow(TRUE);
+        m_checkIPv6.EnableWindow(TRUE);
+        m_buttonOptions.EnableWindow(TRUE);
+        m_comboHost.SetFocus();
+#endif
+        break;
+    case STOPPING_TO_STOPPING:
+#ifndef WIN_MTR_NO_GUI
+        DisplayRedraw();
+#endif
+        break;
+    case STOPPING_TO_EXIT:
+        break;
+    case TRACING_TO_TRACING:
+#ifndef WIN_MTR_NO_GUI
+        DisplayRedraw();
+#endif
+        break;
+    case TRACING_TO_STOPPING:
+#ifndef WIN_MTR_NO_GUI
+        m_buttonStart.EnableWindow(FALSE);
+#endif
+        wmtrnet->StopTrace();
+#ifndef WIN_MTR_NO_GUI
+        statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
+        DisplayRedraw();
+#endif
+        break;
+    case TRACING_TO_EXIT:
+#ifndef WIN_MTR_NO_GUI
+        m_buttonStart.EnableWindow(FALSE);
+#endif
+        wmtrnet->StopTrace();
+#ifndef WIN_MTR_NO_GUI
+        statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
+#endif
+        break;
+    default:
+        TRACE_MSG("Unknown transition " << transition);
+    }
 }
 
 
@@ -1136,3 +1262,32 @@ void WinMTRDialog::OnBnClickedCancel()
 {
 	Transit(EXIT);
 }
+
+#ifdef WIN_MTR_NO_GUI
+bool WinMTRDialog::ProcessNoGuiTask()
+{
+    OnRestart();    //Start the tracing
+
+    if(exit_code == EXIT_FAILURE) //If there is some failure, return without further processing
+    {
+        return exit_code;
+    }
+
+    Sleep( GetDuration() * 1000); //Wait for 'duration' seconds before stopping.
+
+    if(exit_code == EXIT_FAILURE) //If there is some failure, return without further processing
+    {
+        return exit_code;
+    }
+
+    Transit(STOPPING);    //Stop tracing after duration expiry
+
+    if(exit_code == EXIT_FAILURE) //If there is some failure, return without further processing
+    {
+        return exit_code;
+    }
+
+    OnEXPT();                   //Print the report
+    return exit_code;
+}
+#endif

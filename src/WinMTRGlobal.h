@@ -104,4 +104,8 @@ const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
 
 int gettimeofday(struct timeval* tv, struct timezone* tz);
 
+#define WIN_MTR_NO_GUI
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1
+
 #endif // ifndef GLOBAL_H_

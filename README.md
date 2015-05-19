@@ -35,3 +35,16 @@ Since there wasn't any WinMTR build with IPv6, I decided to do it myself ;) The 
 **If you're looking for an alternative** *(not meant for long-term traces)* there's [**vTrace**](http://vtrace.pl).
 It's some really interesting piece of Software ;) *(with more then just trace routes)*
 ~~~~
+
+##About new fork by @smilepleeeaz
+I have created this fork to support the WinMTR with NO GUI. 
+I have added a macro WIN_MTR_NO_GUI that will disable the MFC GUI and WinMTR will be able to run from console/batch files.
+The reports are printed on standard output and errors, if any are printed on standard error.
+I have also added support for two new command line arguments - 
+1. --duration (-d)
+It specifies the duration in seconds for which duration the tracing is to be done. On duration expiry, the tracing is stopped and report is printed.
+2. --report (-r)
+It specifies whether the error logs should be printed on standard error or not. It works with duration param.
+Disabling the WIN_MTR_NO_GUI will again restore the MFC GUI.
+All these changes are under the same GPLv2 license as the original.
+
