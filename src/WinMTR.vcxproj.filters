@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="WinMTRDialog.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRStatusBar.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRGlobal.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRHelp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRLicense.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRMain.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRNet.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTROptions.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMTRProperties.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="console.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRDialog.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRGlobal.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRHelp.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRLicense.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRMain.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRNet.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTROptions.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRProperties.h">
+      <Filter>h</Filter>
+    </ClInclude>
+    <ClInclude Include="WinMTRStatusBar.h">
+      <Filter>h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="h">
+      <UniqueIdentifier>{4ada380a-a16f-460a-8359-3a7f1270a407}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{a7d2c54d-c731-4a37-8b0d-01cc2112ac9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{168054a8-f62f-493a-9592-a7f8251cc0d0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WinMTR.rc">
+      <Filter>res</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="WinMTR.ico">
+      <Filter>res</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

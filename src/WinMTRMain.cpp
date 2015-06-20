@@ -27,13 +27,14 @@
 #include "WinMTRHelp.h"
 #include <algorithm>
 #include <iostream>
-
+#include <io.h>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace std;
 WinMTRMain WinMTR;
 
 //*****************************************************************************
@@ -52,8 +53,12 @@ END_MESSAGE_MAP()
 //*****************************************************************************
 WinMTRMain::WinMTRMain()
 {
-}
 
+}
+WinMTRMain::~WinMTRMain()
+{
+
+}
 //*****************************************************************************
 // WinMTRMain::InitInstance
 //
@@ -63,74 +68,80 @@ BOOL WinMTRMain::InitInstance()
 {
     INITCOMMONCONTROLSEX icex= {sizeof(INITCOMMONCONTROLSEX),ICC_STANDARD_CLASSES};
     InitCommonControlsEx(&icex);
-    if(!AfxSocketInit()) {
+    if(!AfxSocketInit())
+    {
         AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
         return FALSE;
     }
-#ifdef WIN_MTR_NO_GUI
-    CString header = "Welcome to the WinMTR - SHELL MODE!\n\n";
-    bool is_attach_success = AttachConsole(ATTACH_PARENT_PROCESS);     // Use current console window
-    bool is_alloc_console_success = false;
-    if(!is_attach_success)
-    {
-        is_alloc_console_success = AllocConsole();
-    }
- //   LPDWORD charsWritten = 0;
- //   WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), header, header.GetLength(), NULL, NULL);
-#endif
     AfxEnableControlContainer();
-
-
     WinMTRDialog mtrDialog;
     m_pMainWnd = &mtrDialog;
 
-    if(strlen(m_lpCmdLine)) {
+    if(strlen(m_lpCmdLine))
+    {
         strcat(m_lpCmdLine," ");
         ParseCommandLineParams(m_lpCmdLine, &mtrDialog);
     }
+
 #ifdef WIN_MTR_NO_GUI
-    m_pMainWnd = NULL;
-    bool exit_code =  EXIT_SUCCESS;
-    if  (
-        mtrDialog.hasReportFromCmdLine   == true
-        &&
-        mtrDialog.hasDurationFromCmdLine == false
-        )
+    if(strcmp(m_lpCmdLine,"")==0 || mtrDialog.hasReportFromCmdLine == false)
     {
-        if(mtrDialog.hasReportFromCmdLine)
-        {
-            CString err_msg = "Error: -report requires --duration to be passed!\n";
-            WriteConsole(GetStdHandle(STD_ERROR_HANDLE), err_msg, err_msg.GetLength(), NULL, NULL);
-        }
-        exit_code = EXIT_FAILURE;
-    }
-    else if(!mtrDialog.hasHostNameFromCmdLine)
-    {
-        if(mtrDialog.hasReportFromCmdLine)
-        {
-            CString err_msg = "Error: No hostname specified!\n";
-            WriteConsole(GetStdHandle(STD_ERROR_HANDLE), err_msg, err_msg.GetLength(), NULL, NULL);
-        }
-        exit_code = EXIT_FAILURE;
-    }
-    else if(!mtrDialog.hasDurationFromCmdLine)
-    {
-        if(mtrDialog.hasReportFromCmdLine)
-        {
-            CString err_msg = "Error: No duration specified!\n";
-            WriteConsole(GetStdHandle(STD_ERROR_HANDLE), err_msg, err_msg.GetLength(), NULL, NULL);
-        }
-        exit_code = EXIT_FAILURE;
+        mtrDialog.win_mtr_no_gui_flag = false;
+        FreeConsole();
     }
     else
     {
-        exit_code = mtrDialog.ProcessNoGuiTask();
+        mtrDialog.win_mtr_no_gui_flag = true;        
     }
-    FreeConsole();
-    return exit_code;
-#else
-    mtrDialog.DoModal();
+    if(mtrDialog.win_mtr_no_gui_flag)
+    {
+        m_pMainWnd = NULL;
+        bool exit_code =  EXIT_SUCCESS;
+        if  (
+            mtrDialog.hasReportFromCmdLine   == true
+            &&
+            mtrDialog.hasDurationFromCmdLine == false
+            )
+        {
+            if(mtrDialog.hasReportFromCmdLine)
+            {
+                CString err_msg("\nError: -report requires --duration to be passed!\n");
+                cerr<<err_msg;
+            }
+            exit_code = EXIT_FAILURE;
+        }
+        else if(!mtrDialog.hasHostNameFromCmdLine)
+        {
+            if(mtrDialog.hasReportFromCmdLine)
+            {
+                CString err_msg("Error: No hostname specified!\n");
+                cerr<<err_msg;
+            }
+            exit_code = EXIT_FAILURE;
+        }
+        else if(!mtrDialog.hasDurationFromCmdLine)
+        {
+            if(mtrDialog.hasReportFromCmdLine)
+            {
+                CString err_msg("Error: No duration specified!\n");
+                cerr<<err_msg;
+            }
+            exit_code = EXIT_FAILURE;
+        }
+        else
+        {
+            exit_code = mtrDialog.ProcessNoGuiTask();
+        }
+
+        exit( exit_code);
+    }
+    else
 #endif
+    {
+        mtrDialog.DoModal();
+    }
+
+
     return FALSE;
 }
 
@@ -145,27 +156,25 @@ void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg)
     char value[1024];
     std::string host_name = "";
 
-    if(GetParamValue(cmd, "help",'h', value)) {
-#ifdef WIN_MTR_NO_GUI
-        CString help_text("\
-WinMTR (Redux) v1.00 is offered under GPLv2 www.appnor.com\n\n\
-Usage: WinMTR [options] target_host_name\n \
-Options:\n \
-\t--interval,   -i VALUE. Set ping interval.\n\
-\t--size,       -s VALUE. Set ping size.\n \
-\t--maxLRU,     -m VALUE. Set max hosts in LRU list.\n \
-\t--numeric,    -n Do not resolve names.\n \
-\t--duration,   -d VALUE  Sets the duration for tracing (in seconds).\n \
-\t--report,     -r Prints the report on standard output.\n \
-\t--help,       -h Print this help.\n");
-        WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), help_text, help_text.GetLength(), NULL, NULL);
+    if(GetParamValue(cmd, "report",'r', value)) {
+        wmtrdlg->hasReportFromCmdLine   = true;
+    }
 
-#else
-        WinMTRHelp mtrHelp;
-        m_pMainWnd = &mtrHelp;
-        mtrHelp.DoModal();
+    if(GetParamValue(cmd, "help",'h', value)){
+#ifdef WIN_MTR_NO_GUI
+        if(  wmtrdlg->hasReportFromCmdLine)
+        {
+            cout<<HELP_TEXT;
+            exit(EXIT_SUCCESS);
+        }
+        else
 #endif
-        exit(0);
+        {
+            WinMTRHelp mtrHelp;
+            m_pMainWnd = &mtrHelp;
+            mtrHelp.DoModal();
+        }
+
     }
 
     if(GetHostNameParamValue(cmd, host_name)) {
@@ -200,10 +209,6 @@ Options:\n \
         wmtrdlg->SetDuration((long)atol(value));
         wmtrdlg->hasDurationFromCmdLine = true;
     }    
-    if(GetParamValue(cmd, "report",'r', value)) {
-        wmtrdlg->hasReportFromCmdLine   = true;
-    }
-
 }
 
 //*****************************************************************************

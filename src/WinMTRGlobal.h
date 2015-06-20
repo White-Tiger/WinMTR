@@ -87,25 +87,46 @@
 #define MTR_NR_COLS 9
 
 const char MTR_COLS[ MTR_NR_COLS ][10] = {
-	"Hostname",
-	"Nr",
-	"Loss %",
-	"Sent",
-	"Recv",
-	"Best",
-	"Avrg",
-	"Worst",
-	"Last"
+    "Hostname",
+    "Nr",
+    "Loss %",
+    "Sent",
+    "Recv",
+    "Best",
+    "Avrg",
+    "Worst",
+    "Last"
 };
 
 const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
-	249, 30, 50, 40, 40, 50, 50, 50, 50
+    249, 30, 50, 40, 40, 50, 50, 50, 50
 };
 
 int gettimeofday(struct timeval* tv, struct timezone* tz);
 
 #define WIN_MTR_NO_GUI
-#define EXIT_SUCCESS 0
-#define EXIT_FAILURE 1
+
+
+#ifdef WIN_MTR_NO_GUI
+#pragma comment( linker, "/SUBSYSTEM:CONSOLE" )
+#else
+#pragma comment( linker, "/SUBSYSTEM:WINDOWS" )
+#endif
+#define PRESS_ENTER_KEY {\
+    keybd_event(VK_RETURN, 0x9C, 0, 0); \
+    keybd_event(VK_RETURN, 0x9C, KEYEVENTF_KEYUP, 0);\
+}
+#define HELP_TEXT "\
+\nWinMTR (Redux) v1.00 is offered under GPLv2 www.appnor.com\n\n\
+Usage: WinMTR [options] target_host_name\n\
+Options:\n \
+\t--interval,   -i VALUE. Set ping interval.\n\
+\t--size,       -s VALUE. Set ping size.\n\
+\t--maxLRU,     -m VALUE. Set max hosts in LRU list.\n\
+\t--numeric,    -n Do not resolve names.\n\
+\t--duration,   -d VALUE  Sets the duration for tracing (in seconds).\n\
+\t--report,     -r Prints the report on standard output.\n\
+\t--help,       -h Print this help.\n"
+
 
 #endif // ifndef GLOBAL_H_

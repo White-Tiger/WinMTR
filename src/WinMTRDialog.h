@@ -94,6 +94,9 @@ public:
     bool                hasReportFromCmdLine;
     bool				hasHostNameFromCmdLine;
     bool                exit_code;
+    bool isAllocConsole;
+
+
 	WinMTRNet*			wmtrnet;
 	
 	void SetHostName(const char* host);
@@ -142,10 +145,9 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnClose();
 	afx_msg void OnBnClickedCancel();
-#ifdef WIN_MTR_NO_GUI
-public:
+
     bool ProcessNoGuiTask();
-#endif
+    bool win_mtr_no_gui_flag;
 };
 
 #endif // ifndef WINMTRDIALOG_H_

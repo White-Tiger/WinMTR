@@ -25,7 +25,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -115,12 +115,14 @@
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>NotSet</SubSystem>
       <OutputFile>.\Release_x32\WinMTR.exe</OutputFile>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <EnableUAC>false</EnableUAC>
       <UACUIAccess>true</UACUIAccess>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -203,6 +205,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <EnableUAC>false</EnableUAC>
       <UACUIAccess>true</UACUIAccess>
+      <EntryPointSymbol>WinMainCRTStartup </EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -250,6 +253,7 @@
     <ResourceCompile Include="WinMTR.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="WinMTRLicense.cpp" />
     <ClCompile Include="WinMTRStatusBar.cpp" />
     <ClCompile Include="WinMTRDialog.cpp" />
@@ -264,7 +268,6 @@
     <ClInclude Include="WinMTRLicense.h" />
     <ClInclude Include="WinMTRStatusBar.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinMTRDialog.h" />
     <ClInclude Include="WinMTRGlobal.h" />
     <ClInclude Include="WinMTRHelp.h" />
