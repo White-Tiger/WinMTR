@@ -37,14 +37,16 @@ It's some really interesting piece of Software ;) *(with more then just trace ro
 ~~~~
 
 ##About new fork by @smilepleeeaz
-I have created this fork to support the WinMTR with NO GUI. 
-I have added a macro WIN_MTR_NO_GUI that will disable the MFC GUI and WinMTR will be able to run from console/batch files.
+I have created this fork to support the WinMTR in console mode. 
+I have changed the Linker Subsystem to console and added support for commandline argument --report or -r.
+When run with commandline argument --report or -r, the WInMTR will be pure console and would show no GUI.
+When run without --report or -r , the normal GUI of WinMTR will be shown with a blink of console window.
+All my changes are contained in the compile time directive WIN_MTR_NO_GUI, and the original WinMTR can be restored by compiling it after undefining this macro. 
 The reports are printed on standard output and errors, if any are printed on standard error.
-I have also added support for two new command line arguments - 
+I have added support for below two command line arguments - 
 1. --duration (-d)
 It specifies the duration in seconds for which duration the tracing is to be done. On duration expiry, the tracing is stopped and report is printed.
 2. --report (-r)
 It specifies whether the error logs should be printed on standard error or not. It works with duration param.
-Disabling the WIN_MTR_NO_GUI will again restore the MFC GUI.
 All these changes are under the same GPLv2 license as the original.
 
