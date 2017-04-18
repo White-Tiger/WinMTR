@@ -9,12 +9,21 @@
 #include <sstream>
 
 #ifdef _DEBUG
+#ifdef _UNICODE
+#	define TRACE_MSG(msg)										\
+	{															\
+		std::wostringstream dbg_msg(std::wostringstream::out);	\
+		dbg_msg << msg << std::endl;							\
+		OutputDebugString(dbg_msg.str().c_str());				\
+	}
+#else
 #	define TRACE_MSG(msg)										\
 	{															\
 		std::ostringstream dbg_msg(std::ostringstream::out);	\
 		dbg_msg << msg << std::endl;							\
 		OutputDebugString(dbg_msg.str().c_str());				\
 	}
+#endif
 #else
 #	define TRACE_MSG(msg)
 #endif
@@ -53,25 +62,25 @@ WinMTRNet::WinMTRNet(WinMTRDialog* wp)
 	WSADATA wsaData;
 	
 	if(WSAStartup(MAKEWORD(2, 2), &wsaData)) {
-		AfxMessageBox("Failed initializing windows sockets library!");
+		AfxMessageBox(_T("Failed initializing windows sockets library!"));
 		return;
 	}
 	OSVERSIONINFOEX osvi= {0};
 	osvi.dwOSVersionInfoSize=sizeof(OSVERSIONINFOEX);
 	if(!GetVersionEx((OSVERSIONINFO*) &osvi)) {
-		AfxMessageBox("Failed to get Windows version!");
+		AfxMessageBox(_T("Failed to get Windows version!"));
 		return;
 	}
 	if(osvi.dwMajorVersion==5 && osvi.dwMinorVersion==0) { //w2k
 		hICMP_DLL=LoadLibrary(_T("ICMP.DLL"));
 		if(!hICMP_DLL) {
-			AfxMessageBox("Failed: Unable to locate ICMP.DLL!");
+			AfxMessageBox(_T("Failed: Unable to locate ICMP.DLL!"));
 			return;
 		}
 	} else {
 		hICMP_DLL=LoadLibrary(_T("Iphlpapi.dll"));
 		if(!hICMP_DLL) {
-			AfxMessageBox("Failed: Unable to locate Iphlpapi.dll!");
+			AfxMessageBox(_T("Failed: Unable to locate Iphlpapi.dll!"));
 			return;
 		}
 	}
@@ -84,7 +93,7 @@ WinMTRNet::WinMTRNet(WinMTRDialog* wp)
 	lpfnIcmpCloseHandle = (LPFNICMPCLOSEHANDLE)GetProcAddress(hICMP_DLL,"IcmpCloseHandle");
 	lpfnIcmpSendEcho2   = (LPFNICMPSENDECHO2)GetProcAddress(hICMP_DLL,"IcmpSendEcho2");
 	if(!lpfnIcmpCreateFile || !lpfnIcmpCloseHandle || !lpfnIcmpSendEcho2) {
-		AfxMessageBox("Wrong ICMP system library !");
+		AfxMessageBox(_T("Wrong ICMP system library !"));
 		return;
 	}
 	//IPv6
@@ -92,7 +101,7 @@ WinMTRNet::WinMTRNet(WinMTRDialog* wp)
 	lpfnIcmp6SendEcho2=(LPFNICMP6SENDECHO2)GetProcAddress(hICMP_DLL,"Icmp6SendEcho2");
 	if(!lpfnIcmp6CreateFile || !lpfnIcmp6SendEcho2) {
 		hasIPv6=false;
-		AfxMessageBox("IPv6 support not found!");
+		AfxMessageBox(_T("IPv6 support not found!"));
 		return;//@todo : soft fail
 	}
 	
@@ -101,13 +110,13 @@ WinMTRNet::WinMTRNet(WinMTRDialog* wp)
 	 */
 	hICMP = (HANDLE) lpfnIcmpCreateFile();
 	if(hICMP == INVALID_HANDLE_VALUE) {
-		AfxMessageBox("Error in ICMP module!");
+		AfxMessageBox(_T("Error in ICMP module!"));
 		return;
 	}
 	if(hasIPv6) {
 		hICMP6=(HANDLE)lpfnIcmp6CreateFile();
 		if(hICMP6==INVALID_HANDLE_VALUE) {
-			AfxMessageBox("Error in ICMPv6 module!");
+			AfxMessageBox(_T("Error in ICMPv6 module!"));
 			return;//@todo : soft fail
 		}
 	}
@@ -185,7 +194,7 @@ unsigned WINAPI TraceThread(void* p)
 {
 	trace_thread* current = (trace_thread*)p;
 	WinMTRNet* wmtrnet = current->winmtr;
-	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " started.");
+	TRACE_MSG(_T("Thread with TTL=") << (int)current->ttl << _T(" started."));
 	
 	IPINFO			stIPInfo, *lpstIPInfo;
 	char			achReqData[8192];
@@ -216,7 +225,7 @@ unsigned WINAPI TraceThread(void* p)
 		DWORD dwReplyCount = wmtrnet->lpfnIcmpSendEcho2(wmtrnet->hICMP, 0,NULL,NULL, current->address, achReqData, nDataLen, lpstIPInfo, achRepData, sizeof(achRepData), ECHO_REPLY_TIMEOUT);
 		wmtrnet->AddXmit(current->ttl - 1);
 		if(dwReplyCount) {
-			TRACE_MSG("TTL " << (int)current->ttl << " reply TTL " << (int)icmp_echo_reply.Options.Ttl << " Status " << icmp_echo_reply.Status << " Reply count " << dwReplyCount);
+			TRACE_MSG(_T("TTL ") << (int)current->ttl << _T(" reply TTL ") << (int)icmp_echo_reply.Options.Ttl << _T(" Status ") << icmp_echo_reply.Status << _T(" Reply count ") << dwReplyCount);
 			switch(icmp_echo_reply.Status) {
 			case IP_SUCCESS:
 			case IP_TTL_EXPIRED_TRANSIT:
@@ -239,7 +248,7 @@ unsigned WINAPI TraceThread(void* p)
 			}
 		}
 	}//end loop
-	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " stopped.");
+	TRACE_MSG(_T("Thread with TTL=") << (int)current->ttl << _T(" stopped."));
 	delete p;
 	return 0;
 }
@@ -249,7 +258,7 @@ unsigned WINAPI TraceThread6(void* p)
 	static sockaddr_in6 sockaddrfrom= {AF_INET6,0,0,in6addr_any,0};
 	trace_thread6* current = (trace_thread6*)p;
 	WinMTRNet* wmtrnet = current->winmtr;
-	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " started.");
+	TRACE_MSG(_T("Thread with TTL=") << (int)current->ttl << _T(" started."));
 	
 	IPINFO			stIPInfo, *lpstIPInfo;
 	char			achReqData[8192];
@@ -271,7 +280,7 @@ unsigned WINAPI TraceThread6(void* p)
 		DWORD dwReplyCount = wmtrnet->lpfnIcmp6SendEcho2(wmtrnet->hICMP6, 0,NULL,NULL, &sockaddrfrom, &current->address, achReqData, nDataLen, lpstIPInfo, achRepData, sizeof(achRepData), ECHO_REPLY_TIMEOUT);
 		wmtrnet->AddXmit(current->ttl - 1);
 		if(dwReplyCount) {
-			TRACE_MSG("TTL " << (int)current->ttl << " Status " << icmpv6_echo_reply.Status << " Reply count " << dwReplyCount);
+			TRACE_MSG(_T("TTL ") << (int)current->ttl << _T(" Status ") << icmpv6_echo_reply.Status << _T(" Reply count ") << dwReplyCount);
 			switch(icmpv6_echo_reply.Status) {
 			case IP_SUCCESS:
 			case IP_TTL_EXPIRED_TRANSIT:
@@ -294,7 +303,7 @@ unsigned WINAPI TraceThread6(void* p)
 			}
 		}
 	}//end loop
-	TRACE_MSG("Thread with TTL=" << (int)current->ttl << " stopped.");
+	TRACE_MSG(_T("Thread with TTL=") << (int)current->ttl << _T(" stopped."));
 	delete p;
 	return 0;
 }
@@ -304,10 +313,10 @@ sockaddr* WinMTRNet::GetAddr(int at)
 	return (sockaddr*)&host[at].addr;
 }
 
-int WinMTRNet::GetName(int at, char* n)
+int WinMTRNet::GetName(int at, TCHAR* n)
 {
 	WaitForSingleObject(ghMutex, INFINITE);
-	strcpy(n, host[at].name);
+	_tcscpy(n, host[at].name);
 	ReleaseMutex(ghMutex);
 	return 0;
 }
@@ -392,7 +401,7 @@ void WinMTRNet::SetAddr(int at, u_long addr)
 {
 	WaitForSingleObject(ghMutex, INFINITE);
 	if(host[at].addr.sin_addr.s_addr==0) {
-		TRACE_MSG("Start DnsResolverThread for new address " << addr << ". Old addr value was " << host[at].addr.sin_addr.s_addr);
+		TRACE_MSG(_T("Start DnsResolverThread for new address ") << addr << _T(". Old addr value was ") << host[at].addr.sin_addr.s_addr);
 		host[at].addr.sin_family=AF_INET;
 		host[at].addr.sin_addr.s_addr=addr;
 		dns_resolver_thread* dnt=new dns_resolver_thread;
@@ -408,7 +417,7 @@ void WinMTRNet::SetAddr6(int at, IPV6_ADDRESS_EX addrex)
 {
 	WaitForSingleObject(ghMutex, INFINITE);
 	if(!(host[at].addr6.sin6_addr.u.Word[0]|host[at].addr6.sin6_addr.u.Word[1]|host[at].addr6.sin6_addr.u.Word[2]|host[at].addr6.sin6_addr.u.Word[3]|host[at].addr6.sin6_addr.u.Word[4]|host[at].addr6.sin6_addr.u.Word[5]|host[at].addr6.sin6_addr.u.Word[6]|host[at].addr6.sin6_addr.u.Word[7])) {
-		TRACE_MSG("Start DnsResolverThread for new address " << addrex.sin6_addr[0] << ". Old addr value was " << host[at].addr6.sin6_addr.u.Word[0]);
+		TRACE_MSG(_T("Start DnsResolverThread for new address ") << addrex.sin6_addr[0] << _T(". Old addr value was ") << host[at].addr6.sin6_addr.u.Word[0]);
 		host[at].addr6.sin6_family=AF_INET6;
 		host[at].addr6.sin6_addr=*(in6_addr*)&addrex.sin6_addr;
 		dns_resolver_thread* dnt=new dns_resolver_thread;
@@ -420,60 +429,60 @@ void WinMTRNet::SetAddr6(int at, IPV6_ADDRESS_EX addrex)
 	ReleaseMutex(ghMutex);
 }
 
-void WinMTRNet::SetName(int at, char* n)
+void WinMTRNet::SetName(int at, TCHAR* n)
 {
 	WaitForSingleObject(ghMutex, INFINITE);
-	strcpy(host[at].name, n);
+	_tcscpy(host[at].name, n);
 	ReleaseMutex(ghMutex);
 }
 
 void WinMTRNet::SetErrorName(int at, DWORD errnum)
 {
-	const char* name;
+	const TCHAR* name;
 	switch(errnum) {
 	case IP_BUF_TOO_SMALL:
-		name="Reply buffer too small."; break;
+		name=_T("Reply buffer too small."); break;
 	case IP_DEST_NET_UNREACHABLE:
-		name="Destination network unreachable."; break;
+		name=_T("Destination network unreachable."); break;
 	case IP_DEST_HOST_UNREACHABLE:
-		name="Destination host unreachable."; break;
+		name=_T("Destination host unreachable."); break;
 	case IP_DEST_PROT_UNREACHABLE:
-		name="Destination protocol unreachable."; break;
+		name=_T("Destination protocol unreachable."); break;
 	case IP_DEST_PORT_UNREACHABLE:
-		name="Destination port unreachable."; break;
+		name=_T("Destination port unreachable."); break;
 	case IP_NO_RESOURCES:
-		name="Insufficient IP resources were available."; break;
+		name=_T("Insufficient IP resources were available."); break;
 	case IP_BAD_OPTION:
-		name="Bad IP option was specified."; break;
+		name=_T("Bad IP option was specified."); break;
 	case IP_HW_ERROR:
-		name="Hardware error occurred."; break;
+		name=_T("Hardware error occurred."); break;
 	case IP_PACKET_TOO_BIG:
-		name="Packet was too big."; break;
+		name=_T("Packet was too big."); break;
 	case IP_REQ_TIMED_OUT:
-		name="Request timed out."; break;
+		name=_T("Request timed out."); break;
 	case IP_BAD_REQ:
-		name="Bad request."; break;
+		name=_T("Bad request."); break;
 	case IP_BAD_ROUTE:
-		name="Bad route."; break;
+		name=_T("Bad route."); break;
 	case IP_TTL_EXPIRED_REASSEM:
-		name="The time to live expired during fragment reassembly."; break;
+		name=_T("The time to live expired during fragment reassembly."); break;
 	case IP_PARAM_PROBLEM:
-		name="Parameter problem."; break;
+		name=_T("Parameter problem."); break;
 	case IP_SOURCE_QUENCH:
-		name="Datagrams are arriving too fast to be processed and datagrams may have been discarded."; break;
+		name=_T("Datagrams are arriving too fast to be processed and datagrams may have been discarded."); break;
 	case IP_OPTION_TOO_BIG:
-		name="An IP option was too big."; break;
+		name=_T("An IP option was too big."); break;
 	case IP_BAD_DESTINATION:
-		name="Bad destination."; break;
+		name=_T("Bad destination."); break;
 	case IP_GENERAL_FAILURE:
-		name="General failure."; break;
+		name=_T("General failure."); break;
 	default:
-		TRACE_MSG("==UNKNOWN ERROR== " << errnum);
-		name="Unknown error! (please report)"; break;
+		TRACE_MSG(_T("==UNKNOWN ERROR== ") << errnum);
+		name=_T("Unknown error! (please report)"); break;
 	}
 	WaitForSingleObject(ghMutex, INFINITE);
 	if(!*host[at].name)
-		strcpy(host[at].name,name);
+		_tcscpy(host[at].name,name);
 	ReleaseMutex(ghMutex);
 }
 
@@ -507,16 +516,16 @@ void DnsResolverThread(void* p)
 {
 	dns_resolver_thread* dnt=(dns_resolver_thread*)p;
 	WinMTRNet* wn=dnt->winmtr;
-	char hostname[NI_MAXHOST];
-	if(!getnameinfo(wn->GetAddr(dnt->index),sizeof(sockaddr_in6),hostname,NI_MAXHOST,NULL,0,NI_NUMERICHOST)) {
+	TCHAR hostname[NI_MAXHOST];
+	if(!GetNameInfo(wn->GetAddr(dnt->index),sizeof(sockaddr_in6),hostname,NI_MAXHOST,NULL,0,NI_NUMERICHOST)) {
 		wn->SetName(dnt->index,hostname);
 	}
 	if(wn->wmtrdlg->useDNS) {
-		TRACE_MSG("DNS resolver thread started.");
-		if(!getnameinfo(wn->GetAddr(dnt->index),sizeof(sockaddr_in6),hostname,NI_MAXHOST,NULL,0,0)) {
+		TRACE_MSG(_T("DNS resolver thread started."));
+		if(!GetNameInfo(wn->GetAddr(dnt->index),sizeof(sockaddr_in6),hostname,NI_MAXHOST,NULL,0,0)) {
 			wn->SetName(dnt->index,hostname);
 		}
-		TRACE_MSG("DNS resolver thread stopped.");
+		TRACE_MSG(_T("DNS resolver thread stopped."));
 	}
 	delete p;
 }

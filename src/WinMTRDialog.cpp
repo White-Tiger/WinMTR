@@ -13,12 +13,21 @@
 #include <sstream>
 
 #ifdef _DEBUG
-#	define TRACE_MSG(msg)									\
-	{														\
-	std::ostringstream dbg_msg(std::ostringstream::out);	\
-	dbg_msg << msg << std::endl;							\
-	OutputDebugString(dbg_msg.str().c_str());				\
+#ifdef _UNICODE
+#	define TRACE_MSG(msg)										\
+	{															\
+		std::wostringstream dbg_msg(std::wostringstream::out);	\
+		dbg_msg << msg << std::endl;							\
+		OutputDebugString(dbg_msg.str().c_str());				\
 	}
+#else
+#	define TRACE_MSG(msg)										\
+	{															\
+		std::ostringstream dbg_msg(std::ostringstream::out);	\
+		dbg_msg << msg << std::endl;							\
+		OutputDebugString(dbg_msg.str().c_str());				\
+	}
+#endif
 #	define new DEBUG_NEW
 #	undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -125,9 +134,9 @@ BOOL WinMTRDialog::OnInitDialog()
 	}
 	
 #ifndef  _WIN64
-	char caption[] = {"WinMTR (Redux) v1.00 32bit"};
+	TCHAR caption[] = {_T("WinMTR (Redux) v1.00 32bit")};
 #else
-	char caption[] = {"WinMTR (Redux) v1.00 64bit"};
+	TCHAR caption[] = {_T("WinMTR (Redux) v1.00 64bit")};
 #endif
 	
 	SetTimer(1, WINMTR_DIALOG_TIMER, NULL);
@@ -137,7 +146,7 @@ BOOL WinMTRDialog::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);
 	
 	if(!statusBar.Create(this))
-		AfxMessageBox("Error creating status bar");
+		AfxMessageBox(_T("Error creating status bar"));
 	statusBar.GetStatusBarCtrl().SetMinHeight(23);
 	
 	UINT sbi[1];
@@ -147,7 +156,7 @@ BOOL WinMTRDialog::OnInitDialog()
 	
 	// create Appnor button
 	if(m_buttonAppnor.Create(_T("www.appnor.com"), WS_CHILD|WS_VISIBLE|WS_TABSTOP, CRect(0,0,0,0), &statusBar, 1234)) {
-		m_buttonAppnor.SetURL("http://appnor.com/?utm_source=winmtr&utm_medium=desktop&utm_campaign=software");
+		m_buttonAppnor.SetURL(_T("http://appnor.com/?utm_source=winmtr&utm_medium=desktop&utm_campaign=software"));
 		if(statusBar.AddPane(1234,1)) {
 			statusBar.SetPaneWidth(statusBar.CommandToIndex(1234),100);
 			statusBar.AddPaneControl(m_buttonAppnor,1234,true);
@@ -214,66 +223,66 @@ BOOL WinMTRDialog::InitRegistry()
 	DWORD tmp_dword, value_size;
 	LONG r;
 	
-	r = RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL);
+	r = RegCreateKeyEx(HKEY_CURRENT_USER,_T("Software\\WinMTR"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL);
 	if(r != ERROR_SUCCESS)
 		return FALSE;
 		
-	RegSetValueEx(hKey,"Version", 0, REG_SZ, (const unsigned char*)WINMTR_VERSION, sizeof(WINMTR_VERSION)+1);
-	RegSetValueEx(hKey,"License", 0, REG_SZ, (const unsigned char*)WINMTR_LICENSE, sizeof(WINMTR_LICENSE)+1);
-	RegSetValueEx(hKey,"HomePage", 0, REG_SZ, (const unsigned char*)WINMTR_HOMEPAGE, sizeof(WINMTR_HOMEPAGE)+1);
+	RegSetValueEx(hKey,_T("Version"), 0, REG_SZ, (const unsigned char*)WINMTR_VERSION, sizeof(WINMTR_VERSION)+1);
+	RegSetValueEx(hKey,_T("License"), 0, REG_SZ, (const unsigned char*)WINMTR_LICENSE, sizeof(WINMTR_LICENSE)+1);
+	RegSetValueEx(hKey,_T("HomePage"), 0, REG_SZ, (const unsigned char*)WINMTR_HOMEPAGE, sizeof(WINMTR_HOMEPAGE)+1);
 	
-	r = RegCreateKeyEx(hKey,"Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
+	r = RegCreateKeyEx(hKey,_T("Config"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
 	if(r != ERROR_SUCCESS)
 		return FALSE;
 		
-	if(RegQueryValueEx(hKey_v, "PingSize", 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+	if(RegQueryValueEx(hKey_v, _T("PingSize"), 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = pingsize;
-		RegSetValueEx(hKey_v,"PingSize", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+		RegSetValueEx(hKey_v,_T("PingSize"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	} else {
 		if(!hasPingsizeFromCmdLine) pingsize = (WORD)tmp_dword;
 	}
 	
-	if(RegQueryValueEx(hKey_v, "MaxLRU", 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+	if(RegQueryValueEx(hKey_v, _T("MaxLRU"), 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = maxLRU;
-		RegSetValueEx(hKey_v,"MaxLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+		RegSetValueEx(hKey_v,_T("MaxLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	} else {
 		if(!hasMaxLRUFromCmdLine) maxLRU = tmp_dword;
 	}
 	
-	if(RegQueryValueEx(hKey_v, "UseDNS", 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+	if(RegQueryValueEx(hKey_v, _T("UseDNS"), 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = useDNS ? 1 : 0;
-		RegSetValueEx(hKey_v,"UseDNS", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+		RegSetValueEx(hKey_v,_T("UseDNS"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	} else {
 		if(!hasUseDNSFromCmdLine) useDNS = (BOOL)tmp_dword;
 	}
-	if(RegQueryValueEx(hKey_v, "UseIPv6", 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+	if(RegQueryValueEx(hKey_v, _T("UseIPv6"), 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = useIPv6;
-		RegSetValueEx(hKey_v,"UseIPv6", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+		RegSetValueEx(hKey_v,_T("UseIPv6"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	} else {
 		if(!hasUseIPv6FromCmdLine) useIPv6 = (unsigned char)tmp_dword;
 		if(useIPv6>2) useIPv6=1;
 	}
 	m_checkIPv6.SetCheck(useIPv6);
 	
-	if(RegQueryValueEx(hKey_v, "Interval", 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+	if(RegQueryValueEx(hKey_v, _T("Interval"), 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = (DWORD)(interval * 1000);
-		RegSetValueEx(hKey_v,"Interval", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+		RegSetValueEx(hKey_v,_T("Interval"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	} else {
 		if(!hasIntervalFromCmdLine) interval = (float)tmp_dword / 1000.0;
 	}
 	
-	r = RegCreateKeyEx(hKey,"LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
+	r = RegCreateKeyEx(hKey,_T("LRU"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
 	if(r != ERROR_SUCCESS)
 		return FALSE;
-	if(RegQueryValueEx(hKey_v, "NrLRU", 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
+	if(RegQueryValueEx(hKey_v, _T("NrLRU"), 0, NULL, (unsigned char*)&tmp_dword, &value_size) != ERROR_SUCCESS) {
 		tmp_dword = nrLRU;
-		RegSetValueEx(hKey_v,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+		RegSetValueEx(hKey_v,_T("NrLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	} else {
-		char key_name[20];
-		unsigned char str_host[255];
+		TCHAR key_name[20];
+		BYTE str_host[255];
 		nrLRU = tmp_dword;
 		for(int i=0; i<maxLRU; i++) {
-			sprintf(key_name,"Host%d", i+1);
+			_stprintf(key_name,_T("Host%d"), i+1);
 			if(RegQueryValueEx(hKey_v, key_name, 0, NULL, NULL, &value_size) == ERROR_SUCCESS) {
 				RegQueryValueEx(hKey_v, key_name, 0, NULL, str_host, &value_size);
 				str_host[value_size]='\0';
@@ -407,15 +416,15 @@ void WinMTRDialog::OnDblclkList(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 			union {sockaddr* addr; sockaddr_in* addr4; sockaddr_in6* addr6;};
 			addr=wmtrnet->GetAddr(nItem);
 			if(!(addr4->sin_family==AF_INET&&addr4->sin_addr.s_addr) && !(addr6->sin6_family==AF_INET6&&(addr6->sin6_addr.u.Word[0]|addr6->sin6_addr.u.Word[1]|addr6->sin6_addr.u.Word[2]|addr6->sin6_addr.u.Word[3]|addr6->sin6_addr.u.Word[4]|addr6->sin6_addr.u.Word[5]|addr6->sin6_addr.u.Word[6]|addr6->sin6_addr.u.Word[7]))) {
-				strcpy(wmtrprop.host,"");
-				strcpy(wmtrprop.ip,"");
+				_tcscpy(wmtrprop.host,_T(""));
+				_tcscpy(wmtrprop.ip,_T(""));
 				wmtrnet->GetName(nItem, wmtrprop.comment);
 			} else {
 				wmtrnet->GetName(nItem, wmtrprop.host);
-				if(getnameinfo(addr,sizeof(sockaddr_in6),wmtrprop.ip,40,NULL,0,NI_NUMERICHOST)) {
+				if(GetNameInfo(addr,sizeof(sockaddr_in6),wmtrprop.ip,40,NULL,0,NI_NUMERICHOST)) {
 					*wmtrprop.ip='\0';
 				}
-				strcpy(wmtrprop.comment, "Host alive.");
+				_tcscpy(wmtrprop.comment, _T("Host alive."));
 			}
 			
 			wmtrprop.ping_avrg = (float)wmtrnet->GetAvg(nItem);
@@ -437,10 +446,10 @@ void WinMTRDialog::OnDblclkList(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 // WinMTRDialog::SetHostName
 //
 //*****************************************************************************
-void WinMTRDialog::SetHostName(const char* host)
+void WinMTRDialog::SetHostName(LPCTSTR host)
 {
 	m_autostart = 1;
-	strncpy(msz_defaulthostname,host,1000);
+	_tcsncpy(msz_defaulthostname,host,1000);
 }
 
 
@@ -502,29 +511,29 @@ void WinMTRDialog::OnRestart()
 		m_comboHost.GetWindowText(sHost);
 		sHost.TrimLeft(); sHost.TrimRight();
 		if(sHost.IsEmpty()) {
-			AfxMessageBox("No host specified!");
+			AfxMessageBox(_T("No host specified!"));
 			m_comboHost.SetFocus();
 			return ;
 		}
 		m_listMTR.DeleteAllItems();
 		
 		HKEY hKey; DWORD tmp_dword;
-		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
+		if(RegCreateKeyEx(HKEY_CURRENT_USER,_T("Software\\WinMTR\\Config"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
 			tmp_dword=m_checkIPv6.GetCheck();
 			useIPv6=(unsigned char)tmp_dword;
-			RegSetValueEx(hKey,"UseIPv6",0,REG_DWORD,(const unsigned char*)&tmp_dword,sizeof(DWORD));
+			RegSetValueEx(hKey,_T("UseIPv6"),0,REG_DWORD,(const unsigned char*)&tmp_dword,sizeof(DWORD));
 			RegCloseKey(hKey);
 		}
 		if(InitMTRNet()) {
 			if(m_comboHost.FindString(-1, sHost) == CB_ERR) {
 				m_comboHost.InsertString(m_comboHost.GetCount() - 1,sHost);
-				if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
-					char key_name[20];
+				if(RegCreateKeyEx(HKEY_CURRENT_USER,_T("Software\\WinMTR\\LRU"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
+					TCHAR key_name[20];
 					if(++nrLRU>maxLRU) nrLRU=0;
-					sprintf(key_name, "Host%d", nrLRU);
-					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)strlen((LPCTSTR)sHost)+1);
+					_stprintf(key_name, _T("Host%d"), nrLRU);
+					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)_tcslen((LPCTSTR)sHost)+1);
 					tmp_dword = nrLRU;
-					RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+					RegSetValueEx(hKey,_T("NrLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 					RegCloseKey(hKey);
 				}
 			}
@@ -554,27 +563,27 @@ void WinMTRDialog::OnOptions()
 		HKEY hKey;
 		DWORD tmp_dword;
 		
-		if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\Config",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
+		if(RegCreateKeyEx(HKEY_CURRENT_USER,_T("Software\\WinMTR\\Config"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
 			tmp_dword = pingsize;
-			RegSetValueEx(hKey,"PingSize", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+			RegSetValueEx(hKey,_T("PingSize"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 			tmp_dword = maxLRU;
-			RegSetValueEx(hKey,"MaxLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+			RegSetValueEx(hKey,_T("MaxLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 			tmp_dword = useDNS ? 1 : 0;
-			RegSetValueEx(hKey,"UseDNS", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+			RegSetValueEx(hKey,_T("UseDNS"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 			tmp_dword = (DWORD)(interval * 1000);
-			RegSetValueEx(hKey,"Interval", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+			RegSetValueEx(hKey,_T("Interval"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 			RegCloseKey(hKey);
 		}
 		if(maxLRU<nrLRU) {
-			if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
-				char key_name[20];
+			if(RegCreateKeyEx(HKEY_CURRENT_USER,_T("Software\\WinMTR\\LRU"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)==ERROR_SUCCESS) {
+				TCHAR key_name[20];
 				for(int i = maxLRU; i<=nrLRU; ++i) {
-					sprintf(key_name, "Host%d", i);
+					_stprintf(key_name, _T("Host%d"), i);
 					RegDeleteValue(hKey,key_name);
 				}
 				nrLRU = maxLRU;
 				tmp_dword = nrLRU;
-				RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+				RegSetValueEx(hKey,_T("NrLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 				RegCloseKey(hKey);
 			}
 		}
@@ -589,50 +598,54 @@ void WinMTRDialog::OnOptions()
 //*****************************************************************************
 void WinMTRDialog::OnCTTC()
 {
-	char buf[255], t_buf[1000], f_buf[255*100];
+	TCHAR buf[255], t_buf[1000], f_buf[255*100];
 	
 	int nh = wmtrnet->GetMax();
 	
-	strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
-	sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
-	strcat(f_buf, t_buf);
-	sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
-	strcat(f_buf, t_buf);
-	sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
-	strcat(f_buf, t_buf);
+	_tcscpy(f_buf,  _T("|------------------------------------------------------------------------------------------|\r\n"));
+	_stprintf(t_buf, _T("|                                      WinMTR statistics                                   |\r\n"));
+	_tcscat(f_buf, t_buf);
+	_stprintf(t_buf, _T("|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n"));
+	_tcscat(f_buf, t_buf);
+	_stprintf(t_buf, _T("|------------------------------------------------|------|------|------|------|------|------|\r\n"));
+	_tcscat(f_buf, t_buf);
 	
 	for(int i=0; i <nh ; i++) {
 		wmtrnet->GetName(i, buf);
-		if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
+		if(_tcscmp(buf,_T(""))==0) _tcscpy(buf,_T("No response from host"));
 		
-		sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
+		_stprintf(t_buf, _T("|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n") ,
 				buf, wmtrnet->GetPercent(i),
 				wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 				wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
-		strcat(f_buf, t_buf);
+		_tcscat(f_buf, t_buf);
 	}
 	
-	sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
-	strcat(f_buf, t_buf);
+	_stprintf(t_buf, _T("|________________________________________________|______|______|______|______|______|______|\r\n"));
+	_tcscat(f_buf, t_buf);
 	
 	CString cs_tmp((LPCSTR)IDS_STRING_SB_NAME);
-	strcat(f_buf, "   ");
-	strcat(f_buf, (LPCTSTR)cs_tmp);
+	_tcscat(f_buf, _T("   "));
+	_tcscat(f_buf, (LPCTSTR)cs_tmp);
 	
 	CString source(f_buf);
 	
 	HGLOBAL clipbuffer;
-	char* buffer;
+	TCHAR* buffer;
 	
 	OpenClipboard();
 	EmptyClipboard();
 	
-	clipbuffer = GlobalAlloc(GMEM_DDESHARE, source.GetLength()+1);
-	buffer = (char*)GlobalLock(clipbuffer);
-	strcpy(buffer, LPCSTR(source));
+	clipbuffer = GlobalAlloc(GMEM_DDESHARE, (source.GetLength()+1) * sizeof( _TCHAR ));
+	buffer = (TCHAR*)GlobalLock(clipbuffer);
+	_tcscpy(buffer, (LPCTSTR) source);
 	GlobalUnlock(clipbuffer);
 	
+#ifdef _UNICODE
+	SetClipboardData(CF_UNICODETEXT,clipbuffer);
+#else
 	SetClipboardData(CF_TEXT,clipbuffer);
+#endif
 	CloseClipboard();
 }
 
@@ -644,48 +657,52 @@ void WinMTRDialog::OnCTTC()
 //*****************************************************************************
 void WinMTRDialog::OnCHTC()
 {
-	char buf[255], t_buf[1000], f_buf[255*100];
+	TCHAR buf[255], t_buf[1000], f_buf[255*100];
 	
 	int nh = wmtrnet->GetMax();
 	
-	strcpy(f_buf, "<html><head><title>WinMTR Statistics</title></head><body bgcolor=\"white\">\r\n");
-	sprintf(t_buf, "<center><h2>WinMTR statistics</h2></center>\r\n");
-	strcat(f_buf, t_buf);
+	_tcscpy(f_buf, _T("<html><head><title>WinMTR Statistics</title></head><body bgcolor=\"white\">\r\n"));
+	_stprintf(t_buf, _T("<center><h2>WinMTR statistics</h2></center>\r\n"));
+	_tcscat(f_buf, t_buf);
 	
-	sprintf(t_buf, "<p align=\"center\"> <table border=\"1\" align=\"center\">\r\n");
-	strcat(f_buf, t_buf);
+	_stprintf(t_buf, _T("<p align=\"center\"> <table border=\"1\" align=\"center\">\r\n"));
+	_tcscat(f_buf, t_buf);
 	
-	sprintf(t_buf, "<tr><td>Host</td> <td>%%</td> <td>Sent</td> <td>Recv</td> <td>Best</td> <td>Avrg</td> <td>Wrst</td> <td>Last</td></tr>\r\n");
-	strcat(f_buf, t_buf);
+	_stprintf(t_buf, _T("<tr><td>Host</td> <td>%%</td> <td>Sent</td> <td>Recv</td> <td>Best</td> <td>Avrg</td> <td>Wrst</td> <td>Last</td></tr>\r\n"));
+	_tcscat(f_buf, t_buf);
 	
 	for(int i=0; i <nh ; i++) {
 		wmtrnet->GetName(i, buf);
-		if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
+		if(_tcscmp(buf,_T(""))==0) _tcscpy(buf,_T("No response from host"));
 		
-		sprintf(t_buf, "<tr><td>%s</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n" ,
+		_stprintf(t_buf, _T("<tr><td>%s</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n") ,
 				buf, wmtrnet->GetPercent(i),
 				wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 				wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
-		strcat(f_buf, t_buf);
+		_tcscat(f_buf, t_buf);
 	}
 	
-	sprintf(t_buf, "</table></body></html>\r\n");
-	strcat(f_buf, t_buf);
+	_stprintf(t_buf, _T("</table></body></html>\r\n"));
+	_tcscat(f_buf, t_buf);
 	
 	CString source(f_buf);
 	
 	HGLOBAL clipbuffer;
-	char* buffer;
+	TCHAR* buffer;
 	
 	OpenClipboard();
 	EmptyClipboard();
 	
-	clipbuffer = GlobalAlloc(GMEM_DDESHARE, source.GetLength()+1);
-	buffer = (char*)GlobalLock(clipbuffer);
-	strcpy(buffer, LPCSTR(source));
+	clipbuffer = GlobalAlloc(GMEM_DDESHARE, (source.GetLength()+1) * sizeof( _TCHAR ));
+	buffer = (TCHAR*)GlobalLock(clipbuffer);
+	_tcscpy(buffer, (LPCTSTR) source);
 	GlobalUnlock(clipbuffer);
 	
+#ifdef _UNICODE
+	SetClipboardData(CF_UNICODETEXT,clipbuffer);
+#else
 	SetClipboardData(CF_TEXT,clipbuffer);
+#endif
 	CloseClipboard();
 }
 
@@ -707,40 +724,40 @@ void WinMTRDialog::OnEXPT()
 					this);
 	if(dlg.DoModal() == IDOK) {
 	
-		char buf[255], t_buf[1000], f_buf[255*100];
+		TCHAR buf[255], t_buf[1000], f_buf[255*100];
 		
 		int nh = wmtrnet->GetMax();
 		
-		strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
-		sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
-		strcat(f_buf, t_buf);
-		sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
-		strcat(f_buf, t_buf);
-		sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
-		strcat(f_buf, t_buf);
+		_tcscpy(f_buf,  _T("|------------------------------------------------------------------------------------------|\r\n"));
+		_stprintf(t_buf, _T("|                                      WinMTR statistics                                   |\r\n"));
+		_tcscat(f_buf, t_buf);
+		_stprintf(t_buf, _T("|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n"));
+		_tcscat(f_buf, t_buf);
+		_stprintf(t_buf, _T("|------------------------------------------------|------|------|------|------|------|------|\r\n"));
+		_tcscat(f_buf, t_buf);
 		
 		for(int i=0; i <nh ; i++) {
 			wmtrnet->GetName(i, buf);
-			if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
+			if(_tcscmp(buf,_T(""))==0) _tcscpy(buf,_T("No response from host"));
 			
-			sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
+			_stprintf(t_buf, _T("|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n") ,
 					buf, wmtrnet->GetPercent(i),
 					wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 					wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
-			strcat(f_buf, t_buf);
+			_tcscat(f_buf, t_buf);
 		}
 		
-		sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
-		strcat(f_buf, t_buf);
+		_stprintf(t_buf, _T("|________________________________________________|______|______|______|______|______|______|\r\n"));
+		_tcscat(f_buf, t_buf);
 		
 		
 		CString cs_tmp((LPCSTR)IDS_STRING_SB_NAME);
-		strcat(f_buf, "   ");
-		strcat(f_buf, (LPCTSTR)cs_tmp);
+		_tcscat(f_buf, _T("   "));
+		_tcscat(f_buf, (LPCTSTR)cs_tmp);
 		
-		FILE* fp = fopen(dlg.GetPathName(), "wt");
+		FILE* fp = _tfopen(dlg.GetPathName(), _T("wt"));
 		if(fp != NULL) {
-			fprintf(fp, "%s", f_buf);
+			_ftprintf(fp, _T("%s"), f_buf);
 			fclose(fp);
 		}
 	}
@@ -765,37 +782,37 @@ void WinMTRDialog::OnEXPH()
 					
 	if(dlg.DoModal() == IDOK) {
 	
-		char buf[255], t_buf[1000], f_buf[255*100];
+		TCHAR buf[255], t_buf[1000], f_buf[255*100];
 		
 		int nh = wmtrnet->GetMax();
 		
-		strcpy(f_buf, "<html><head><title>WinMTR Statistics</title></head><body bgcolor=\"white\">\r\n");
-		sprintf(t_buf, "<center><h2>WinMTR statistics</h2></center>\r\n");
-		strcat(f_buf, t_buf);
+		_tcscpy(f_buf, _T("<html><head><title>WinMTR Statistics</title></head><body bgcolor=\"white\">\r\n"));
+		_stprintf(t_buf, _T("<center><h2>WinMTR statistics</h2></center>\r\n"));
+		_tcscat(f_buf, t_buf);
 		
-		sprintf(t_buf, "<p align=\"center\"> <table border=\"1\" align=\"center\">\r\n");
-		strcat(f_buf, t_buf);
+		_stprintf(t_buf, _T("<p align=\"center\"> <table border=\"1\" align=\"center\">\r\n"));
+		_tcscat(f_buf, t_buf);
 		
-		sprintf(t_buf, "<tr><td>Host</td> <td>%%</td> <td>Sent</td> <td>Recv</td> <td>Best</td> <td>Avrg</td> <td>Wrst</td> <td>Last</td></tr>\r\n");
-		strcat(f_buf, t_buf);
+		_stprintf(t_buf, _T("<tr><td>Host</td> <td>%%</td> <td>Sent</td> <td>Recv</td> <td>Best</td> <td>Avrg</td> <td>Wrst</td> <td>Last</td></tr>\r\n"));
+		_tcscat(f_buf, t_buf);
 		
 		for(int i=0; i <nh ; i++) {
 			wmtrnet->GetName(i, buf);
-			if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
+			if(_tcscmp(buf,_T(""))==0) _tcscpy(buf,_T("No response from host"));
 			
-			sprintf(t_buf, "<tr><td>%s</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n" ,
+			_stprintf(t_buf, _T("<tr><td>%s</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n") ,
 					buf, wmtrnet->GetPercent(i),
 					wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 					wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
-			strcat(f_buf, t_buf);
+			_tcscat(f_buf, t_buf);
 		}
 		
-		sprintf(t_buf, "</table></body></html>\r\n");
-		strcat(f_buf, t_buf);
+		_stprintf(t_buf, _T("</table></body></html>\r\n"));
+		_tcscat(f_buf, t_buf);
 		
-		FILE* fp = fopen(dlg.GetPathName(), "wt");
+		FILE* fp = _tfopen(dlg.GetPathName(), _T("wt"));
 		if(fp != NULL) {
-			fprintf(fp, "%s", f_buf);
+			_ftprintf(fp, _T("%s"), f_buf);
 			fclose(fp);
 		}
 	}
@@ -821,16 +838,16 @@ void WinMTRDialog::OnCancel()
 //*****************************************************************************
 int WinMTRDialog::DisplayRedraw()
 {
-	char buf[255], nr_crt[255];
+	TCHAR buf[255], nr_crt[255];
 	int nh = wmtrnet->GetMax();
 	while(m_listMTR.GetItemCount() > nh) m_listMTR.DeleteItem(m_listMTR.GetItemCount() - 1);
 	
 	for(int i=0; i <nh ; ++i) {
 	
 		wmtrnet->GetName(i, buf);
-		if(!*buf) strcpy(buf,"No response from host");
+		if(!*buf) _tcscpy(buf,_T("No response from host"));
 		
-		sprintf(nr_crt, "%d", i+1);
+		_stprintf(nr_crt, _T("%d"), i+1);
 		if(m_listMTR.GetItemCount() <= i)
 			m_listMTR.InsertItem(i, buf);
 		else
@@ -838,25 +855,25 @@ int WinMTRDialog::DisplayRedraw()
 			
 		m_listMTR.SetItem(i, 1, LVIF_TEXT, nr_crt, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetPercent(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetPercent(i));
 		m_listMTR.SetItem(i, 2, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetXmit(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetXmit(i));
 		m_listMTR.SetItem(i, 3, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetReturned(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetReturned(i));
 		m_listMTR.SetItem(i, 4, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetBest(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetBest(i));
 		m_listMTR.SetItem(i, 5, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetAvg(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetAvg(i));
 		m_listMTR.SetItem(i, 6, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetWorst(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetWorst(i));
 		m_listMTR.SetItem(i, 7, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetLast(i));
+		_stprintf(buf, _T("%d"), wmtrnet->GetLast(i));
 		m_listMTR.SetItem(i, 8, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
 		
@@ -873,15 +890,15 @@ int WinMTRDialog::DisplayRedraw()
 //*****************************************************************************
 int WinMTRDialog::InitMTRNet()
 {
-	char hostname[255];
-	char buf[255];
+	TCHAR hostname[255];
+	TCHAR buf[255];
 	m_comboHost.GetWindowText(hostname, 255);
 	
-	sprintf(buf, "Resolving host %s...", hostname);
+	_stprintf(buf, _T("Resolving host %s..."), hostname);
 	statusBar.SetPaneText(0,buf);
 	
-	addrinfo nfofilter= {0};
-	addrinfo* anfo;
+	ADDRINFOT nfofilter= {0};
+	ADDRINFOT* anfo;
 	if(wmtrnet->hasIPv6) {
 		switch(useIPv6) {
 		case 0:
@@ -894,12 +911,12 @@ int WinMTRDialog::InitMTRNet()
 	}
 	nfofilter.ai_socktype=SOCK_RAW;
 	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
-	if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo) {
+	if(GetAddrInfo(hostname,NULL,&nfofilter,&anfo)||!anfo) {
 		statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
-		AfxMessageBox("Unable to resolve hostname.");
+		AfxMessageBox(_T("Unable to resolve hostname."));
 		return 0;
 	}
-	freeaddrinfo(anfo);
+	FreeAddrInfo(anfo);
 	return 1;
 }
 
@@ -914,11 +931,11 @@ void PingThread(void* p)
 	WinMTRDialog* wmtrdlg = (WinMTRDialog*)p;
 	WaitForSingleObject(wmtrdlg->traceThreadMutex, INFINITE);
 	
-	char hostname[255];
+	TCHAR hostname[255];
 	wmtrdlg->m_comboHost.GetWindowText(hostname, 255);
 	
-	addrinfo nfofilter= {0};
-	addrinfo* anfo;
+	ADDRINFOT nfofilter= {0};
+	ADDRINFOT* anfo;
 	if(wmtrdlg->wmtrnet->hasIPv6) {
 		switch(wmtrdlg->useIPv6) {
 		case 0:
@@ -931,13 +948,13 @@ void PingThread(void* p)
 	}
 	nfofilter.ai_socktype=SOCK_RAW;
 	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
-	if(getaddrinfo(hostname,NULL,&nfofilter,&anfo)||!anfo) { //we use first address returned
-		AfxMessageBox("Unable to resolve hostname. (again)");
+	if(GetAddrInfo(hostname,NULL,&nfofilter,&anfo)||!anfo) { //we use first address returned
+		AfxMessageBox(_T("Unable to resolve hostname. (again)"));
 		ReleaseMutex(wmtrdlg->traceThreadMutex);
 		return;
 	}
 	wmtrdlg->wmtrnet->DoTrace(anfo->ai_addr);
-	freeaddrinfo(anfo);
+	FreeAddrInfo(anfo);
 	ReleaseMutex(wmtrdlg->traceThreadMutex);
 }
 
@@ -951,19 +968,19 @@ void WinMTRDialog::ClearHistory()
 {
 	HKEY hKey;
 	DWORD tmp_dword;
-	char key_name[20];
+	TCHAR key_name[20];
 	
-	if(RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\WinMTR\\LRU",0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)!=ERROR_SUCCESS) {
+	if(RegCreateKeyEx(HKEY_CURRENT_USER,_T("Software\\WinMTR\\LRU"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey,NULL)!=ERROR_SUCCESS) {
 		return;
 	}
 	
 	for(int i = 0; i<=nrLRU; i++) {
-		sprintf(key_name, "Host%d", i);
+		_stprintf(key_name, _T("Host%d"), i);
 		RegDeleteValue(hKey,key_name);
 	}
 	nrLRU = 0;
 	tmp_dword = nrLRU;
-	RegSetValueEx(hKey,"NrLRU", 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
+	RegSetValueEx(hKey,_T("NrLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 	RegCloseKey(hKey);
 	
 	m_comboHost.Clear();
@@ -995,7 +1012,7 @@ void WinMTRDialog::Transit(STATES new_state)
 			transition = IDLE_TO_IDLE;
 			break;
 		default:
-			TRACE_MSG("Received state IDLE after " << state);
+			TRACE_MSG(_T("Received state IDLE after ") << state);
 			return;
 		}
 		state = IDLE;
@@ -1009,7 +1026,7 @@ void WinMTRDialog::Transit(STATES new_state)
 			transition = TRACING_TO_TRACING;
 			break;
 		default:
-			TRACE_MSG("Received state TRACING after " << state);
+			TRACE_MSG(_T("Received state TRACING after ") << state);
 			return;
 		}
 		state = TRACING;
@@ -1023,7 +1040,7 @@ void WinMTRDialog::Transit(STATES new_state)
 			transition = TRACING_TO_STOPPING;
 			break;
 		default:
-			TRACE_MSG("Received state STOPPING after " << state);
+			TRACE_MSG(_T("Received state STOPPING after ") << state);
 			return;
 		}
 		state = STOPPING;
@@ -1042,13 +1059,13 @@ void WinMTRDialog::Transit(STATES new_state)
 		case EXIT:
 			break;
 		default:
-			TRACE_MSG("Received state EXIT after " << state);
+			TRACE_MSG(_T("Received state EXIT after ") << state);
 			return;
 		}
 		state = EXIT;
 		break;
 	default:
-		TRACE_MSG("Received state " << state);
+		TRACE_MSG(_T("Received state ") << state);
 	}
 	
 	// modify controls according to new state
@@ -1058,11 +1075,11 @@ void WinMTRDialog::Transit(STATES new_state)
 		break;
 	case IDLE_TO_TRACING:
 		m_buttonStart.EnableWindow(FALSE);
-		m_buttonStart.SetWindowText("Stop");
+		m_buttonStart.SetWindowText(_T("Stop"));
 		m_comboHost.EnableWindow(FALSE);
 		m_checkIPv6.EnableWindow(FALSE);
 		m_buttonOptions.EnableWindow(FALSE);
-		statusBar.SetPaneText(0, "Double click on host name for more information.");
+		statusBar.SetPaneText(0, _T("Double click on host name for more information."));
 		_beginthread(PingThread, 0 , this);
 		m_buttonStart.EnableWindow(TRUE);
 		break;
@@ -1075,7 +1092,7 @@ void WinMTRDialog::Transit(STATES new_state)
 		DisplayRedraw();
 		m_buttonStart.EnableWindow(TRUE);
 		statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
-		m_buttonStart.SetWindowText("Start");
+		m_buttonStart.SetWindowText(_T("Start"));
 		m_comboHost.EnableWindow(TRUE);
 		m_checkIPv6.EnableWindow(TRUE);
 		m_buttonOptions.EnableWindow(TRUE);
@@ -1092,16 +1109,16 @@ void WinMTRDialog::Transit(STATES new_state)
 	case TRACING_TO_STOPPING:
 		m_buttonStart.EnableWindow(FALSE);
 		wmtrnet->StopTrace();
-		statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
+		statusBar.SetPaneText(0, _T("Waiting for last packets in order to stop trace ..."));
 		DisplayRedraw();
 		break;
 	case TRACING_TO_EXIT:
 		m_buttonStart.EnableWindow(FALSE);
 		wmtrnet->StopTrace();
-		statusBar.SetPaneText(0, "Waiting for last packets in order to stop trace ...");
+		statusBar.SetPaneText(0, _T("Waiting for last packets in order to stop trace ..."));
 		break;
 	default:
-		TRACE_MSG("Unknown transition " << transition);
+		TRACE_MSG(_T("Unknown transition ") << transition);
 	}
 }
 

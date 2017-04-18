@@ -13,6 +13,9 @@
 #ifndef GLOBAL_H_
 #define GLOBAL_H_
 
+#define _WIN32_WINNT 0x0502
+#define _CRT_NON_CONFORMING_SWPRINTFS
+
 #ifndef  _WIN64
 #define  _USE_32BIT_TIME_T
 #endif
@@ -86,16 +89,16 @@
 
 #define MTR_NR_COLS 9
 
-const char MTR_COLS[ MTR_NR_COLS ][10] = {
-	"Hostname",
-	"Nr",
-	"Loss %",
-	"Sent",
-	"Recv",
-	"Best",
-	"Avrg",
-	"Worst",
-	"Last"
+const TCHAR MTR_COLS[ MTR_NR_COLS ][10] = {
+	_T("Hostname"),
+	_T("Nr"),
+	_T("Loss %"),
+	_T("Sent"),
+	_T("Recv"),
+	_T("Best"),
+	_T("Avrg"),
+	_T("Worst"),
+	_T("Last")
 };
 
 const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {

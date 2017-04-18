@@ -91,7 +91,7 @@ public:
 	bool				hasUseIPv6FromCmdLine;
 	WinMTRNet*			wmtrnet;
 	
-	void SetHostName(const char* host);
+	void SetHostName(LPCTSTR host);
 	void SetInterval(float i);
 	void SetPingSize(WORD ps);
 	void SetMaxLRU(int mlru);
@@ -101,7 +101,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
 	
 	int m_autostart;
-	char msz_defaulthostname[1000];
+	TCHAR msz_defaulthostname[1000];
 	
 	HICON m_hIcon;
 	
