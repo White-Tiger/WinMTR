@@ -133,10 +133,16 @@ BOOL WinMTRDialog::OnInitDialog()
 		return TRUE;
 	}
 	
-#ifndef  _WIN64
-	TCHAR caption[] = {_T("WinMTR (Redux) v1.00 32bit")};
+TCHAR caption[] = {_T("WinMTR (Redux) v1.10")
+#ifdef _WIN64
+	_T(" 64bit")
 #else
-	TCHAR caption[] = {_T("WinMTR (Redux) v1.00 64bit")};
+	_T(" 32bit")
+#endif
+#ifdef _UNICODE
+	_T(" Unicode")
+#else
+	_T(" ANSI")
 #endif
 	
 	SetTimer(1, WINMTR_DIALOG_TIMER, NULL);
@@ -894,7 +900,29 @@ int WinMTRDialog::InitMTRNet()
 	TCHAR buf[255];
 	m_comboHost.GetWindowText(hostname, 255);
 	
-	_stprintf(buf, _T("Resolving host %s..."), hostname);
+	const TCHAR *ascii_hostname = hostname;
+#ifdef _UNICODE
+	#define IDN_MAX_LENGTH 255
+	typedef int (WINAPI *fnIdnToAscii)(DWORD,const WCHAR *,int,WCHAR *,int);
+	fnIdnToAscii IdnToAscii;
+	WCHAR pPunycode[IDN_MAX_LENGTH];
+    HINSTANCE hNormalizDLL = LoadLibrary(_T("normaliz.dll"));
+	TRACE_MSG(_T("dll ptr is ") << (size_t) hNormalizDLL);
+	if (!hNormalizDLL) {
+        FreeLibrary(hNormalizDLL);
+		goto resolve;
+	}
+	IdnToAscii = (fnIdnToAscii) GetProcAddress(hNormalizDLL, "IdnToAscii");
+
+	if (IdnToAscii(0, hostname, -1, pPunycode, IDN_MAX_LENGTH) > 0) {
+		ascii_hostname = pPunycode;
+	TRACE_MSG(_T("puny code is ") << ascii_hostname);
+	}
+    FreeLibrary(hNormalizDLL);
+#else
+#endif
+resolve:
+	_stprintf(buf, _T("Resolving host %s..."), ascii_hostname);
 	statusBar.SetPaneText(0,buf);
 	
 	ADDRINFOT nfofilter= {0};
@@ -911,7 +939,7 @@ int WinMTRDialog::InitMTRNet()
 	}
 	nfofilter.ai_socktype=SOCK_RAW;
 	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
-	if(GetAddrInfo(hostname,NULL,&nfofilter,&anfo)||!anfo) {
+	if(GetAddrInfo(ascii_hostname,NULL,&nfofilter,&anfo)||!anfo) {
 		statusBar.SetPaneText(0, CString((LPCSTR)IDS_STRING_SB_NAME));
 		AfxMessageBox(_T("Unable to resolve hostname."));
 		return 0;
@@ -934,6 +962,28 @@ void PingThread(void* p)
 	TCHAR hostname[255];
 	wmtrdlg->m_comboHost.GetWindowText(hostname, 255);
 	
+	const TCHAR *ascii_hostname = hostname;
+#ifdef _UNICODE
+	#define IDN_MAX_LENGTH 255
+	typedef int (WINAPI *fnIdnToAscii)(DWORD,const WCHAR *,int,WCHAR *,int);
+	fnIdnToAscii IdnToAscii;
+	WCHAR pPunycode[IDN_MAX_LENGTH];
+    HINSTANCE hNormalizDLL = LoadLibrary(_T("normaliz.dll"));
+	TRACE_MSG(_T("dll ptr is ") << (size_t) hNormalizDLL);
+	if (!hNormalizDLL) {
+        FreeLibrary(hNormalizDLL);
+		goto resolve;
+	}
+	IdnToAscii = (fnIdnToAscii) GetProcAddress(hNormalizDLL, "IdnToAscii");
+
+	if (IdnToAscii(0, hostname, -1, pPunycode, IDN_MAX_LENGTH) > 0) {
+		ascii_hostname = pPunycode;
+	TRACE_MSG(_T("puny code is ") << ascii_hostname);
+	}
+    FreeLibrary(hNormalizDLL);
+#else
+#endif
+resolve:
 	ADDRINFOT nfofilter= {0};
 	ADDRINFOT* anfo;
 	if(wmtrdlg->wmtrnet->hasIPv6) {
@@ -948,7 +998,7 @@ void PingThread(void* p)
 	}
 	nfofilter.ai_socktype=SOCK_RAW;
 	nfofilter.ai_flags=AI_NUMERICSERV|AI_ADDRCONFIG;//|AI_V4MAPPED;
-	if(GetAddrInfo(hostname,NULL,&nfofilter,&anfo)||!anfo) { //we use first address returned
+	if(GetAddrInfo(ascii_hostname,NULL,&nfofilter,&anfo)||!anfo) { //we use first address returned
 		AfxMessageBox(_T("Unable to resolve hostname. (again)"));
 		ReleaseMutex(wmtrdlg->traceThreadMutex);
 		return;
