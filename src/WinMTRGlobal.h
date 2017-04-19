@@ -51,9 +51,9 @@
 
 #include "resource.h"
 
-#define WINMTR_VERSION	"1.0"
-#define WINMTR_LICENSE	"GPLv2 - GNU General Public License, version 2"
-#define WINMTR_HOMEPAGE	"https://github.com/White-Tiger/WinMTR"
+#define WINMTR_VERSION	_T("1.0")
+#define WINMTR_LICENSE	_T("GPLv2 - GNU General Public License, version 2")
+#define WINMTR_HOMEPAGE	_T("https://github.com/White-Tiger/WinMTR")
 
 #define DEFAULT_PING_SIZE	64
 #define DEFAULT_INTERVAL	1.0

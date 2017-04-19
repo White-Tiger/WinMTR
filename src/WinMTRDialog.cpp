@@ -227,9 +227,9 @@ BOOL WinMTRDialog::InitRegistry()
 	if(r != ERROR_SUCCESS)
 		return FALSE;
 		
-	RegSetValueEx(hKey,_T("Version"), 0, REG_SZ, (const unsigned char*)WINMTR_VERSION, sizeof(WINMTR_VERSION)+1);
-	RegSetValueEx(hKey,_T("License"), 0, REG_SZ, (const unsigned char*)WINMTR_LICENSE, sizeof(WINMTR_LICENSE)+1);
-	RegSetValueEx(hKey,_T("HomePage"), 0, REG_SZ, (const unsigned char*)WINMTR_HOMEPAGE, sizeof(WINMTR_HOMEPAGE)+1);
+	RegSetValueEx(hKey,_T("Version"), 0, REG_SZ, (const unsigned char*)WINMTR_VERSION, sizeof(WINMTR_VERSION)+sizeof(TCHAR));
+	RegSetValueEx(hKey,_T("License"), 0, REG_SZ, (const unsigned char*)WINMTR_LICENSE, sizeof(WINMTR_LICENSE)+sizeof(TCHAR));
+	RegSetValueEx(hKey,_T("HomePage"), 0, REG_SZ, (const unsigned char*)WINMTR_HOMEPAGE, sizeof(WINMTR_HOMEPAGE)+sizeof(TCHAR));
 	
 	r = RegCreateKeyEx(hKey,_T("Config"),0,NULL,0,KEY_ALL_ACCESS,NULL,&hKey_v,NULL);
 	if(r != ERROR_SUCCESS)
@@ -285,8 +285,8 @@ BOOL WinMTRDialog::InitRegistry()
 			_stprintf(key_name,_T("Host%d"), i+1);
 			if(RegQueryValueEx(hKey_v, key_name, 0, NULL, NULL, &value_size) == ERROR_SUCCESS) {
 				RegQueryValueEx(hKey_v, key_name, 0, NULL, str_host, &value_size);
-				str_host[value_size]='\0';
-				m_comboHost.AddString((CString)str_host);
+				str_host[value_size]=_T('\0');
+				m_comboHost.AddString((LPCTSTR)str_host);
 			}
 		}
 	}
@@ -531,7 +531,7 @@ void WinMTRDialog::OnRestart()
 					TCHAR key_name[20];
 					if(++nrLRU>maxLRU) nrLRU=0;
 					_stprintf(key_name, _T("Host%d"), nrLRU);
-					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)_tcslen((LPCTSTR)sHost)+1);
+					RegSetValueEx(hKey,key_name, 0, REG_SZ, (const unsigned char*)(LPCTSTR)sHost, (DWORD)(_tcslen((LPCTSTR)sHost)+1)*sizeof(TCHAR));
 					tmp_dword = nrLRU;
 					RegSetValueEx(hKey,_T("NrLRU"), 0, REG_DWORD, (const unsigned char*)&tmp_dword, sizeof(DWORD));
 					RegCloseKey(hKey);
