@@ -89,6 +89,14 @@ public:
 	bool				hasUseDNSFromCmdLine;
 	unsigned char		useIPv6;
 	bool				hasUseIPv6FromCmdLine;
+    long                duration;
+    bool                hasDurationFromCmdLine;
+    bool                hasReportFromCmdLine;
+    bool				hasHostNameFromCmdLine;
+    bool                exit_code;
+    bool isAllocConsole;
+
+
 	WinMTRNet*			wmtrnet;
 	
 	void SetHostName(const char* host);
@@ -96,7 +104,12 @@ public:
 	void SetPingSize(WORD ps);
 	void SetMaxLRU(int mlru);
 	void SetUseDNS(BOOL udns);
-	
+    void        SetDuration(long d);
+    long        GetDuration();
+    const char* GetHostName();
+    float       GetInterval();
+
+    WinMTRNet* GetWinMTRNetObj();
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);
 	
@@ -132,6 +145,9 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnClose();
 	afx_msg void OnBnClickedCancel();
+
+    bool ProcessNoGuiTask();
+    bool win_mtr_no_gui_flag;
 };
 
 #endif // ifndef WINMTRDIALOG_H_

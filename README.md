@@ -35,3 +35,18 @@ Since there wasn't any WinMTR build with IPv6, I decided to do it myself ;) The 
 **If you're looking for an alternative** *(not meant for long-term traces)* there's [**vTrace**](http://vtrace.pl).
 It's some really interesting piece of Software ;) *(with more then just trace routes)*
 ~~~~
+
+##About new fork by @smilepleeeaz
+I have created this fork to support the WinMTR in console mode. 
+I have changed the Linker Subsystem to console and added support for commandline argument --report or -r.
+When run with commandline argument --report or -r, the WInMTR will be pure console and would show no GUI.
+When run without --report or -r , the normal GUI of WinMTR will be shown with a blink of console window.
+All my changes are contained in the compile time directive WIN_MTR_NO_GUI, and the original WinMTR can be restored by compiling it after undefining this macro. 
+The reports are printed on standard output and errors, if any are printed on standard error.
+I have added support for below two command line arguments - 
+1. --duration (-d)
+It specifies the duration in seconds for which duration the tracing is to be done. On duration expiry, the tracing is stopped and report is printed.
+2. --report (-r)
+It specifies whether the error logs should be printed on standard error or not. It works with duration param.
+All these changes are under the same GPLv2 license as the original.
+
