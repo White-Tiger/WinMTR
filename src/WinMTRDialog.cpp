@@ -144,7 +144,7 @@ TCHAR caption[] = {_T("WinMTR (Redux) v1.10")
 #else
 	_T(" ANSI")
 #endif
-	
+};
 	SetTimer(1, WINMTR_DIALOG_TIMER, NULL);
 	SetWindowText(caption);
 	
