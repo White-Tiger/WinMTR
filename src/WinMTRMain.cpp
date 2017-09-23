@@ -74,8 +74,8 @@ BOOL WinMTRMain::InitInstance()
 	WinMTRDialog mtrDialog;
 	m_pMainWnd = &mtrDialog;
 	
-	if(strlen(m_lpCmdLine)) {
-		strcat(m_lpCmdLine," ");
+	if(_tcslen(m_lpCmdLine)) {
+		_tcscat(m_lpCmdLine,_T(" "));
 		ParseCommandLineParams(m_lpCmdLine, &mtrDialog);
 	}
 	
@@ -93,10 +93,15 @@ BOOL WinMTRMain::InitInstance()
 //*****************************************************************************
 void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg)
 {
-	char value[1024];
-	std::string host_name = "";
+	TCHAR value[1024];
+#ifdef _UNICODE
+	std::wstring
+#else
+	std::string
+#endif
+	host_name = _T("");
 	
-	if(GetParamValue(cmd, "help",'h', value)) {
+	if(GetParamValue(cmd, _T("help"),_T('h'), value)) {
 		WinMTRHelp mtrHelp;
 		m_pMainWnd = &mtrHelp;
 		mtrHelp.DoModal();
@@ -106,27 +111,27 @@ void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg)
 	if(GetHostNameParamValue(cmd, host_name)) {
 		wmtrdlg->SetHostName(host_name.c_str());
 	}
-	if(GetParamValue(cmd, "interval",'i', value)) {
-		wmtrdlg->SetInterval((float)atof(value));
+	if(GetParamValue(cmd, _T("interval"),_T('i'), value)) {
+		wmtrdlg->SetInterval((float)_ttof(value));
 		wmtrdlg->hasIntervalFromCmdLine = true;
 	}
-	if(GetParamValue(cmd, "size",'s', value)) {
-		wmtrdlg->SetPingSize((WORD)atoi(value));
+	if(GetParamValue(cmd, _T("size"),_T('s'), value)) {
+		wmtrdlg->SetPingSize((WORD)_ttoi(value));
 		wmtrdlg->hasPingsizeFromCmdLine = true;
 	}
-	if(GetParamValue(cmd, "maxLRU",'m', value)) {
-		wmtrdlg->SetMaxLRU(atoi(value));
+	if(GetParamValue(cmd, _T("maxLRU"),_T('m'), value)) {
+		wmtrdlg->SetMaxLRU(_ttoi(value));
 		wmtrdlg->hasMaxLRUFromCmdLine = true;
 	}
-	if(GetParamValue(cmd, "numeric",'n', NULL)) {
+	if(GetParamValue(cmd, _T("numeric"),_T('n'), NULL)) {
 		wmtrdlg->SetUseDNS(FALSE);
 		wmtrdlg->hasUseDNSFromCmdLine = true;
 	}
-	if(GetParamValue(cmd, "ipv6",'6', NULL)) {
+	if(GetParamValue(cmd, _T("ipv6"),_T('6'), NULL)) {
 		wmtrdlg->hasUseIPv6FromCmdLine=true;
 		wmtrdlg->useIPv6=1;
 	}
-	if(GetParamValue(cmd, "ipv4",'4', NULL)) {
+	if(GetParamValue(cmd, _T("ipv4"),_T('4'), NULL)) {
 		wmtrdlg->hasUseIPv6FromCmdLine=true;
 		wmtrdlg->useIPv6=0;
 	}
@@ -137,19 +142,19 @@ void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg)
 //
 //
 //*****************************************************************************
-int WinMTRMain::GetParamValue(LPTSTR cmd, char* param, char sparam, char* value)
+int WinMTRMain::GetParamValue(LPTSTR cmd, TCHAR* param, TCHAR sparam, TCHAR* value)
 {
-	char* p;
+	TCHAR* p;
 	
-	char p_long[1024];
-	char p_short[1024];
+	TCHAR p_long[1024];
+	TCHAR p_short[1024];
 	
-	sprintf(p_long,"--%s ", param);
-	sprintf(p_short,"-%c ", sparam);
+	_stprintf(p_long,_T("--%s "), param);
+	_stprintf(p_short,_T("-%c "), sparam);
 	
-	if((p=strstr(cmd, p_long))) ;
+	if((p=_tcsstr(cmd, p_long))) ;
 	else
-		p=strstr(cmd, p_short);
+		p=_tcsstr(cmd, p_short);
 		
 	if(p == NULL)
 		return 0;
@@ -157,14 +162,14 @@ int WinMTRMain::GetParamValue(LPTSTR cmd, char* param, char sparam, char* value)
 	if(!value)
 		return 1;
 		
-	while(*p && *p!=' ')
+	while(*p && *p!=_T(' '))
 		p++;
-	while(*p==' ') p++;
+	while(*p==_T(' ')) p++;
 	
 	int i = 0;
-	while(*p && *p!=' ')
+	while(*p && *p!=_T(' '))
 		value[i++] = *p++;
-	value[i]='\0';
+	value[i]=_T('\0');
 	
 	return 1;
 }
@@ -174,15 +179,26 @@ int WinMTRMain::GetParamValue(LPTSTR cmd, char* param, char sparam, char* value)
 //
 //
 //*****************************************************************************
-int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, std::string& host_name)
+int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, 
+#ifdef _UNICODE
+	std::wstring&
+#else
+	std::string&
+#endif
+	host_name)
 {
 // WinMTR -h -i 1 -n google.com
-	size_t size = strlen(cmd);
-	std::string name = "";
-	while(cmd[--size] == ' ');
+	size_t size = _tcslen(cmd);
+#ifdef _UNICODE
+	std::wstring
+#else
+	std::string
+#endif
+	name = _T("");
+	while(cmd[--size] == _T(' '));
 	
 	size++;
-	while(size-- && cmd[size] != ' ' && (cmd[size] != '-' || cmd[size - 1] != ' ')) {
+	while(size-- && cmd[size] != _T(' ') && (cmd[size] != _T('-') || cmd[size - 1] != _T(' '))) {
 		name = cmd[size ] + name;
 	}
 	
@@ -194,18 +210,23 @@ int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, std::string& host_name)
 			return 1;
 		}
 	}
-	if(cmd[size] == '-' && cmd[size - 1] == ' ') {
+	if(cmd[size] == _T('-') && cmd[size - 1] == _T(' ')) {
 		// no target specified
 		return 0;
 	}
 	
-	std::string possible_argument = "";
+#ifdef _UNICODE
+	std::wstring
+#else
+	std::string
+#endif
+	possible_argument = _T("");
 	
-	while(size-- && cmd[size] != ' ') {
+	while(size-- && cmd[size] != _T(' ')) {
 		possible_argument = cmd[size] + possible_argument;
 	}
 	
-	if(possible_argument.length() && (possible_argument[0] != '-' || possible_argument == "-n" || possible_argument == "--numeric" || possible_argument == "-6" || possible_argument == "--ipv6" || possible_argument == "-4" || possible_argument == "--ipv4")) {
+	if(possible_argument.length() && (possible_argument[0] != _T('-') || possible_argument == _T("-n") || possible_argument == _T("--numeric") || possible_argument == _T("-6") || possible_argument == _T("--ipv6") || possible_argument == _T("-4") || possible_argument == _T("--ipv4"))) {
 		host_name = name;
 		return 1;
 	}

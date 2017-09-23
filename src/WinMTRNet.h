@@ -36,7 +36,7 @@ struct s_nethost {
 	int last;				// last time
 	int best;				// best time
 	int worst;			// worst time
-	char name[255];
+	TCHAR name[255];
 };
 
 //*****************************************************************************
@@ -66,7 +66,7 @@ public:
 	void	StopTrace();
 	
 	sockaddr* GetAddr(int at);
-	int		GetName(int at, char* n);
+	int		GetName(int at, TCHAR* n);
 	int		GetBest(int at);
 	int		GetWorst(int at);
 	int		GetAvg(int at);
@@ -78,7 +78,7 @@ public:
 	
 	void	SetAddr(int at, u_long addr);
 	void	SetAddr6(int at, IPV6_ADDRESS_EX addrex);
-	void	SetName(int at, char* n);
+	void	SetName(int at, TCHAR* n);
 	void	SetErrorName(int at,DWORD errnum);
 	void	UpdateRTT(int at, int rtt);
 	void	AddReturned(int at);
