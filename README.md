@@ -1,4 +1,4 @@
-WinMTR (Redux)
+***WinMTR (Redux)***
 ==============
 **WinMTR (Redux)** in an extended fork of [Appnor's WinMTR](http://winmtr.net/) ([sourceforge](http://sourceforge.net/projects/winmtr/)) <br>
 with IPv6 support and other different enhancements and bug fixes
