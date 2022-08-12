@@ -582,6 +582,19 @@ void WinMTRDialog::OnOptions()
 }
 
 
+// Pad string to a certain length
+void string_pad(char* dest, char *template1, char* template2, int desired_len, char fill_char) {
+	int pad_len = desired_len - ( strlen(template1) + strlen(template2) ); 
+	if (pad_len < 0) pad_len = 0;
+
+	strcpy(dest, template1);
+	
+	for (int i = 0; i < pad_len-1; i++)
+		strncat(dest, &fill_char, 1);
+
+	strcat(dest, template2);
+}
+
 //*****************************************************************************
 // WinMTRDialog::OnCTTC
 //
@@ -589,30 +602,40 @@ void WinMTRDialog::OnOptions()
 //*****************************************************************************
 void WinMTRDialog::OnCTTC()
 {
-	char buf[255], t_buf[1000], f_buf[255*100];
+	char buf[255], t_buf[1000], t_buf2[1000], f_buf[255 * 100];
 	
 	int nh = wmtrnet->GetMax();
+
+	int longest; // longest dns name
+	longest = strlen("No response from host");
+	for (int i = 0; i < nh; i++) {
+		wmtrnet->GetName(i, buf);
+		if (strlen(buf) > longest)
+			longest = strlen(buf);
+	}
+	int pad = longest + 56;
 	
-	strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
-	sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
+	string_pad(f_buf, "|-", "--------------------------------------------------|\r\n", pad, '-');
+	string_pad(t_buf, "| ", "           WinMTR statistics                      |\r\n", pad, ' ');
 	strcat(f_buf, t_buf);
-	sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
+	string_pad(t_buf, "| ", " Host -   %  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n", pad, ' ');
 	strcat(f_buf, t_buf);
-	sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
+	string_pad(t_buf, "|-", "--------|------|------|------|------|------|------|\r\n", pad, '-');
 	strcat(f_buf, t_buf);
 	
 	for(int i=0; i <nh ; i++) {
 		wmtrnet->GetName(i, buf);
 		if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
 		
-		sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
+		sprintf(t_buf, "%s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
 				buf, wmtrnet->GetPercent(i),
 				wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 				wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
-		strcat(f_buf, t_buf);
+		string_pad(t_buf2, "| ", t_buf, pad, ' ');
+		strcat(f_buf, t_buf2);
 	}
 	
-	sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
+	string_pad(t_buf, "|_", "__|______|______|______|______|______|______|\r\n", pad, '_');
 	strcat(f_buf, t_buf);
 	
 	CString cs_tmp((LPCSTR)IDS_STRING_SB_NAME);
