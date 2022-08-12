@@ -513,8 +513,18 @@ void DnsResolverThread(void* p)
 	}
 	if(wn->wmtrdlg->useDNS) {
 		TRACE_MSG("DNS resolver thread started.");
-		if(!getnameinfo(wn->GetAddr(dnt->index),sizeof(sockaddr_in6),hostname,NI_MAXHOST,NULL,0,0)) {
-			wn->SetName(dnt->index,hostname);
+		if (!getnameinfo(wn->GetAddr(dnt->index), sizeof(sockaddr_in6), hostname, NI_MAXHOST, NULL, 0, 0)) {
+			char ip[NI_MAXHOST];
+			wn->GetName(dnt->index, ip);
+			if (strcmp(hostname, ip) != 0) {
+				// Append IP to hostname
+				char final_name[NI_MAXHOST];
+				snprintf(final_name, NI_MAXHOST - 1, "%s (%s)", hostname, ip);
+				wn->SetName(dnt->index, final_name);
+			}
+			else {
+				wn->SetName(dnt->index, hostname);
+			}
 		}
 		TRACE_MSG("DNS resolver thread stopped.");
 	}
