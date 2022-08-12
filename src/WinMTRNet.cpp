@@ -513,6 +513,10 @@ void DnsResolverThread(void* p)
 	if(!getnameinfo(wn->GetAddr(dnt->index),sizeof(sockaddr_in6),ip,NI_MAXHOST,NULL,0,NI_NUMERICHOST)) {
 		wn->SetName(dnt->index,ip);
 	}
+	else {
+		strcpy(hostname, "");
+	}
+
 	if(wn->wmtrdlg->useDNS) {
 		TRACE_MSG("DNS resolver thread started.");
 		if (!getnameinfo(wn->GetAddr(dnt->index), sizeof(sockaddr_in6), hostname, NI_MAXHOST, NULL, 0, 0)) {
