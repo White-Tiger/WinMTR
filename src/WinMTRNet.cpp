@@ -8,26 +8,6 @@
 #include <iostream>
 #include <sstream>
 
-#ifdef _DEBUG
-#ifdef _UNICODE
-#	define TRACE_MSG(msg)										\
-	{															\
-		std::wostringstream dbg_msg(std::wostringstream::out);	\
-		dbg_msg << msg << std::endl;							\
-		OutputDebugString(dbg_msg.str().c_str());				\
-	}
-#else
-#	define TRACE_MSG(msg)										\
-	{															\
-		std::ostringstream dbg_msg(std::ostringstream::out);	\
-		dbg_msg << msg << std::endl;							\
-		OutputDebugString(dbg_msg.str().c_str());				\
-	}
-#endif
-#else
-#	define TRACE_MSG(msg)
-#endif
-
 #define IPFLAG_DONT_FRAGMENT	0x02
 #define MAX_HOPS				30
 

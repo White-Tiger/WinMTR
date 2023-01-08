@@ -94,12 +94,7 @@ BOOL WinMTRMain::InitInstance()
 void WinMTRMain::ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg)
 {
 	TCHAR value[1024];
-#ifdef _UNICODE
-	std::wstring
-#else
-	std::string
-#endif
-	host_name = _T("");
+	_tstring host_name = _T("");
 	
 	if(GetParamValue(cmd, _T("help"),_T('h'), value)) {
 		WinMTRHelp mtrHelp;
@@ -179,22 +174,11 @@ int WinMTRMain::GetParamValue(LPTSTR cmd, TCHAR* param, TCHAR sparam, TCHAR* val
 //
 //
 //*****************************************************************************
-int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, 
-#ifdef _UNICODE
-	std::wstring&
-#else
-	std::string&
-#endif
-	host_name)
+int WinMTRMain::GetHostNameParamValue(LPTSTR cmd, _tstring &host_name)
 {
 // WinMTR -h -i 1 -n google.com
 	size_t size = _tcslen(cmd);
-#ifdef _UNICODE
-	std::wstring
-#else
-	std::string
-#endif
-	name = _T("");
+	_tstring name = _T("");
 	while(cmd[--size] == _T(' '));
 	
 	size++;
@@ -215,12 +199,7 @@ int WinMTRMain::GetHostNameParamValue(LPTSTR cmd,
 		return 0;
 	}
 	
-#ifdef _UNICODE
-	std::wstring
-#else
-	std::string
-#endif
-	possible_argument = _T("");
+	_tstring possible_argument = _T("");
 	
 	while(size-- && cmd[size] != _T(' ')) {
 		possible_argument = cmd[size] + possible_argument;

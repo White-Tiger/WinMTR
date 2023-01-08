@@ -49,6 +49,9 @@
 #include <sys/timeb.h>
 #include <sys/stat.h>
 
+#include <string>
+#include <sstream>
+
 #include "resource.h"
 
 #define WINMTR_VERSION	_T("1.0")
@@ -106,5 +109,21 @@ const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
 };
 
 int gettimeofday(struct timeval* tv, struct timezone* tz);
+
+typedef std::basic_string<TCHAR> _tstring;
+typedef std::basic_ostringstream<TCHAR> _tostringstream;
+typedef std::basic_istringstream<TCHAR> _tistringstream;
+
+#ifdef _DEBUG
+#	define TRACE_MSG(msg)										\
+	{															\
+		_tostringstream dbg_msg(_tostringstream::out);	\
+		dbg_msg << msg << std::endl;							\
+		OutputDebugString(dbg_msg.str().c_str());				\
+	}
+#else
+#	define TRACE_MSG(msg)
+#endif
+
 
 #endif // ifndef GLOBAL_H_

@@ -14,8 +14,7 @@
 #define WINMTRMAIN_H_
 
 #include "WinMTRDialog.h"
-#include <string>
-
+#include "WinMTRGlobal.h"
 
 //*****************************************************************************
 // CLASS:  WinMTRMain
@@ -35,13 +34,7 @@ public:
 private:
 	void	ParseCommandLineParams(LPTSTR cmd, WinMTRDialog* wmtrdlg);
 	int		GetParamValue(LPTSTR cmd, TCHAR* param, TCHAR sparam, TCHAR* value);
-	int		GetHostNameParamValue(LPTSTR cmd, 
-#ifdef _UNICODE
-		std::wstring&
-#else
-		std::string&
-#endif
-		value);
+	int		GetHostNameParamValue(LPTSTR cmd, _tstring &value);
 	
 };
 
