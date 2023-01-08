@@ -13,6 +13,9 @@
 #ifndef GLOBAL_H_
 #define GLOBAL_H_
 
+#define _WIN32_WINNT 0x0502
+#define _CRT_NON_CONFORMING_SWPRINTFS
+
 #ifndef  _WIN64
 #define  _USE_32BIT_TIME_T
 #endif
@@ -46,11 +49,14 @@
 #include <sys/timeb.h>
 #include <sys/stat.h>
 
+#include <string>
+#include <sstream>
+
 #include "resource.h"
 
-#define WINMTR_VERSION	"1.0"
-#define WINMTR_LICENSE	"GPLv2 - GNU General Public License, version 2"
-#define WINMTR_HOMEPAGE	"https://github.com/White-Tiger/WinMTR"
+#define WINMTR_VERSION	_T("1.0")
+#define WINMTR_LICENSE	_T("GPLv2 - GNU General Public License, version 2")
+#define WINMTR_HOMEPAGE	_T("https://github.com/White-Tiger/WinMTR")
 
 #define DEFAULT_PING_SIZE	64
 #define DEFAULT_INTERVAL	1.0
@@ -86,16 +92,16 @@
 
 #define MTR_NR_COLS 9
 
-const char MTR_COLS[ MTR_NR_COLS ][10] = {
-	"Hostname",
-	"Nr",
-	"Loss %",
-	"Sent",
-	"Recv",
-	"Best",
-	"Avrg",
-	"Worst",
-	"Last"
+const TCHAR MTR_COLS[ MTR_NR_COLS ][10] = {
+	_T("Hostname"),
+	_T("Nr"),
+	_T("Loss %"),
+	_T("Sent"),
+	_T("Recv"),
+	_T("Best"),
+	_T("Avrg"),
+	_T("Worst"),
+	_T("Last")
 };
 
 const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
@@ -103,5 +109,21 @@ const int MTR_COL_LENGTH[ MTR_NR_COLS ] = {
 };
 
 int gettimeofday(struct timeval* tv, struct timezone* tz);
+
+typedef std::basic_string<TCHAR> _tstring;
+typedef std::basic_ostringstream<TCHAR> _tostringstream;
+typedef std::basic_istringstream<TCHAR> _tistringstream;
+
+#ifdef _DEBUG
+#	define TRACE_MSG(msg)										\
+	{															\
+		_tostringstream dbg_msg(_tostringstream::out);	\
+		dbg_msg << msg << std::endl;							\
+		OutputDebugString(dbg_msg.str().c_str());				\
+	}
+#else
+#	define TRACE_MSG(msg)
+#endif
+
 
 #endif // ifndef GLOBAL_H_

@@ -29,9 +29,9 @@ public:
 	
 	enum { IDD = IDD_DIALOG_PROPERTIES };
 
-	char	host[255];
-	char	ip[40];
-	char	comment[255];
+	TCHAR	host[255];
+	TCHAR	ip[40];
+	TCHAR	comment[255];
 
 	float	ping_last;
 	float	ping_best;

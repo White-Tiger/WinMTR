@@ -49,15 +49,15 @@ BOOL WinMTROptions::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	char strtmp[20];
+	TCHAR strtmp[20];
 	
-	sprintf(strtmp, "%.1f", interval);
+	_stprintf(strtmp, _T("%.1f"), interval);
 	m_editInterval.SetWindowText(strtmp);
 	
-	sprintf(strtmp, "%d", pingsize);
+	_stprintf(strtmp, _T("%d"), pingsize);
 	m_editSize.SetWindowText(strtmp);
 	
-	sprintf(strtmp, "%d", maxLRU);
+	_stprintf(strtmp, _T("%d"), maxLRU);
 	m_editMaxLRU.SetWindowText(strtmp);
 
 	m_checkDNS.SetCheck(useDNS);
@@ -74,18 +74,18 @@ BOOL WinMTROptions::OnInitDialog()
 //*****************************************************************************
 void WinMTROptions::OnOK() 
 {
-	char tmpstr[20];
+	TCHAR tmpstr[20];
 	
 	useDNS = m_checkDNS.GetCheck();
 
 	m_editInterval.GetWindowText(tmpstr, 20);
-	interval = atof(tmpstr);
+	interval = _ttof(tmpstr);
 
 	m_editSize.GetWindowText(tmpstr, 20);
-	pingsize = atoi(tmpstr);
+	pingsize = _ttoi(tmpstr);
 	
 	m_editMaxLRU.GetWindowText(tmpstr, 20);
-	maxLRU = atoi(tmpstr);
+	maxLRU = _ttoi(tmpstr);
 
 	CDialog::OnOK();
 }

@@ -13,8 +13,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static const char LICENCE_TEXT_1[]= {
-	"		    GNU GENERAL PUBLIC LICENSE\r\n\
+static const TCHAR LICENCE_TEXT_1[]= {
+	_T("		    GNU GENERAL PUBLIC LICENSE\r\n\
 		       Version 2, June 1991\r\n\
 			   \r\n\
  Copyright (C) 1989, 1991 Free Software Foundation, Inc.\r\n\
@@ -147,7 +147,8 @@ with the Program (or with a work based on the Program) on a volume of\r\n\
 a storage or distribution medium does not bring the other work under\r\n\
 the scope of this License.\r\n\
 \r\n\
-  3. You may copy and distribute the Program (or a work based on it,\r\n\
+") \
+_T("  3. You may copy and distribute the Program (or a work based on it,\r\n\
 under Section 2) in object code or executable form under the terms of\r\n\
 Sections 1 and 2 above provided that you also do one of the following:\r\n\
 \r\n\
@@ -202,7 +203,8 @@ Program), you indicate your acceptance of this License to do so, and\r\n\
 all its terms and conditions for copying, distributing or modifying\r\n\
 the Program or works based on it.\r\n\
 \r\n\
-  6. Each time you redistribute the Program (or any work based on the\r\n\
+")
+  _T("6. Each time you redistribute the Program (or any work based on the\r\n\
 Program), the recipient automatically receives a license from the\r\n\
 original licensor to copy, distribute or modify the Program subject to\r\n\
 these terms and conditions.  You may not impose any further\r\n\
@@ -293,10 +295,10 @@ YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER\r\n\
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE\r\n\
 POSSIBILITY OF SUCH DAMAGES.\r\n\
 \r\n\
-		     END OF TERMS AND CONDITIONS\r\n"
+		     END OF TERMS AND CONDITIONS\r\n")
 };
-static const char LICENCE_TEXT_2[]= {
-	"\r\n\
+static const TCHAR LICENCE_TEXT_2[]= {
+	_T("\r\n\
 	    How to Apply These Terms to Your New Programs\r\n\
 \r\n\
   If you develop a new program, and you want it to be of the greatest\r\n\
@@ -355,7 +357,7 @@ This General Public License does not permit incorporating your program into\r\n\
 proprietary programs.  If your program is a subroutine library, you may\r\n\
 consider it more useful to permit linking proprietary applications with the\r\n\
 library.  If this is what you want to do, use the GNU Library General\r\n\
-Public License instead of this License."
+Public License instead of this License.")
 };
 
 //*****************************************************************************
