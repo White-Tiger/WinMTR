@@ -40,7 +40,7 @@ public:
 
 	int		pck_sent;
 	int		pck_recv;
-	int		pck_loss;
+	double	pck_loss;
 
 	CEdit	m_editHost,
 			m_editIP,

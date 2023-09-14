@@ -336,10 +336,10 @@ int WinMTRNet::GetAvg(int at)
 	return ret;
 }
 
-int WinMTRNet::GetPercent(int at)
+double WinMTRNet::GetPercent(int at)
 {
 	WaitForSingleObject(ghMutex, INFINITE);
-	int ret = (host[at].xmit == 0) ? 0 : (100 - (100 * host[at].returned / host[at].xmit));
+	double ret = (host[at].xmit == 0) ? 0 : (100 - (100.0 * host[at].returned / host[at].xmit));
 	ReleaseMutex(ghMutex);
 	return ret;
 }
