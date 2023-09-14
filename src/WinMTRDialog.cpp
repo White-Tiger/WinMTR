@@ -593,26 +593,26 @@ void WinMTRDialog::OnCTTC()
 	
 	int nh = wmtrnet->GetMax();
 	
-	strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
-	sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
+	strcpy(f_buf,  "|--------------------------------------------------------------------------------------------|\r\n");
+	sprintf(t_buf, "|                                       WinMTR statistics                                    |\r\n");
 	strcat(f_buf, t_buf);
-	sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
+	sprintf(t_buf, "|                       Host              -     %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
 	strcat(f_buf, t_buf);
-	sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
+	sprintf(t_buf, "|--------------------------------------------------|------|------|------|------|------|------|\r\n");
 	strcat(f_buf, t_buf);
 	
 	for(int i=0; i <nh ; i++) {
 		wmtrnet->GetName(i, buf);
 		if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
 		
-		sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
+		sprintf(t_buf, "|%40s - %6.2f | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
 				buf, wmtrnet->GetPercent(i),
 				wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 				wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
 		strcat(f_buf, t_buf);
 	}
 	
-	sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
+	sprintf(t_buf, "|__________________________________________________|______|______|______|______|______|______|\r\n");
 	strcat(f_buf, t_buf);
 	
 	CString cs_tmp((LPCSTR)IDS_STRING_SB_NAME);
@@ -662,7 +662,7 @@ void WinMTRDialog::OnCHTC()
 		wmtrnet->GetName(i, buf);
 		if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
 		
-		sprintf(t_buf, "<tr><td>%s</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n" ,
+		sprintf(t_buf, "<tr><td>%s</td> <td>%6.2f</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n" ,
 				buf, wmtrnet->GetPercent(i),
 				wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 				wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
@@ -711,26 +711,26 @@ void WinMTRDialog::OnEXPT()
 		
 		int nh = wmtrnet->GetMax();
 		
-		strcpy(f_buf,  "|------------------------------------------------------------------------------------------|\r\n");
-		sprintf(t_buf, "|                                      WinMTR statistics                                   |\r\n");
+		strcpy(f_buf,  "|--------------------------------------------------------------------------------------------|\r\n");
+		sprintf(t_buf, "|                                       WinMTR statistics                                    |\r\n");
 		strcat(f_buf, t_buf);
-		sprintf(t_buf, "|                       Host              -   %%  | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
+		sprintf(t_buf, "|                       Host              -    %%   | Sent | Recv | Best | Avrg | Wrst | Last |\r\n");
 		strcat(f_buf, t_buf);
-		sprintf(t_buf, "|------------------------------------------------|------|------|------|------|------|------|\r\n");
+		sprintf(t_buf, "|--------------------------------------------------|------|------|------|------|------|------|\r\n");
 		strcat(f_buf, t_buf);
 		
 		for(int i=0; i <nh ; i++) {
 			wmtrnet->GetName(i, buf);
 			if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
 			
-			sprintf(t_buf, "|%40s - %4d | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
+			sprintf(t_buf, "|%40s - %6.2f | %4d | %4d | %4d | %4d | %4d | %4d |\r\n" ,
 					buf, wmtrnet->GetPercent(i),
 					wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 					wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
 			strcat(f_buf, t_buf);
 		}
 		
-		sprintf(t_buf, "|________________________________________________|______|______|______|______|______|______|\r\n");
+		sprintf(t_buf, "|__________________________________________________|______|______|______|______|______|______|\r\n");
 		strcat(f_buf, t_buf);
 		
 		
@@ -783,7 +783,7 @@ void WinMTRDialog::OnEXPH()
 			wmtrnet->GetName(i, buf);
 			if(strcmp(buf,"")==0) strcpy(buf,"No response from host");
 			
-			sprintf(t_buf, "<tr><td>%s</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n" ,
+			sprintf(t_buf, "<tr><td>%s</td> <td>%6.2f</td> <td%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td> <td>%4d</td></tr>\r\n" ,
 					buf, wmtrnet->GetPercent(i),
 					wmtrnet->GetXmit(i), wmtrnet->GetReturned(i), wmtrnet->GetBest(i),
 					wmtrnet->GetAvg(i), wmtrnet->GetWorst(i), wmtrnet->GetLast(i));
@@ -838,7 +838,7 @@ int WinMTRDialog::DisplayRedraw()
 			
 		m_listMTR.SetItem(i, 1, LVIF_TEXT, nr_crt, 0, 0, 0, 0);
 		
-		sprintf(buf, "%d", wmtrnet->GetPercent(i));
+		sprintf(buf, "%6.2f", wmtrnet->GetPercent(i));
 		m_listMTR.SetItem(i, 2, LVIF_TEXT, buf, 0, 0, 0, 0);
 		
 		sprintf(buf, "%d", wmtrnet->GetXmit(i));

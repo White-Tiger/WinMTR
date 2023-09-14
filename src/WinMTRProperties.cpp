@@ -70,7 +70,7 @@ BOOL WinMTRProperties::OnInitDialog()
 	m_editHost.SetWindowText(host);
 	m_editComment.SetWindowText(comment);
 
-	sprintf(buf, "%d", pck_loss);
+	sprintf(buf, "%6.2f", pck_loss);
 	m_editLoss.SetWindowText(buf);
 	sprintf(buf, "%d", pck_sent);
 	m_editSent.SetWindowText(buf);
